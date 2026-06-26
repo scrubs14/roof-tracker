@@ -1,0 +1,14 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Barlow+Condensed:wght@600;700;800&display=swap');
+:root {
+  --black:#080808;--surface:#111;--card:#181818;--card2:#1e1e1e;
+  --border:#252525;--muted:#333;--dim:#666;--text:#ccc;--white:#f0f0f0;
+  --gold:#c8922a;--gold-bg:rgba(200,146,42,0.08);
+  --green:#4caf80;--green-bg:rgba(76,175,128,0.08);
+  --red:#e05c5c;--red-bg:rgba(224,92,92,0.08);
+  --blue:#4a8ec2;--purple:#9b7fa8;
+  --font-d:'Barlow Condensed',sans-serif;--font-b:'Inter',sans-serif;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{background:var(--black);color:var(--text);font-family:var(--font-b);font-size:14px;min-height:100vh;-webkit-font-smoothing:antialiased;}
+input,select,button,textarea{font-family:var(--font-b);}
+input[type=number]::-webkit-inner-spin-button{-webkit-appearance:none;}
