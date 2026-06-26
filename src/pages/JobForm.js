@@ -4,8 +4,6 @@ import { CARRIERS, STATUSES, TRADES } from './Dashboard';
 
 const MONTHS = ['January','February','March','April','May','June','July','August','September','October','November','December'];
 
-function fmt(n) { return '$'+Number(n||0).toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2}); }
-
 export default function JobForm({ job, onSave, onClose, onDelete }) {
   const isEdit = !!job?.id;
   const [form, setForm] = useState({
