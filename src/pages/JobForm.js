@@ -6,6 +6,32 @@ const MONTHS = ['January','February','March','April','May','June','July','August
 
 export default function JobForm({ job, onSave, onClose, onDelete }) {
   const isEdit = !!job?.id;
+  const cleanJob = job ? {
+    client_name: job.client_name || '',
+    address: job.address || '',
+    city: job.city || 'Clarksville',
+    state: job.state || 'TN',
+    job_type: job.job_type || 'Insurance',
+    carrier: job.carrier || '',
+    claim_number: job.claim_number || '',
+    adjuster_name: job.adjuster_name || '',
+    claim_status: job.claim_status || 'Pending',
+    date_of_loss: job.date_of_loss || '',
+    inspection_date: job.inspection_date || '',
+    contract_date: job.contract_date || '',
+    contract_amount: job.contract_amount || '',
+    payout_amount: job.payout_amount || '',
+    rcv_amount: job.rcv_amount || '',
+    acv_amount: job.acv_amount || '',
+    depreciation_held: job.depreciation_held || '',
+    supplement_amount: job.supplement_amount || '',
+    trades: job.trades || '',
+    notes: job.notes || '',
+    job_month: job.job_month || '',
+    job_year: job.job_year || '2026',
+    id: job.id
+  } : null;
+
   const [form, setForm] = useState({
     client_name:'', address:'', city:'Clarksville', state:'TN',
     job_type:'Insurance', carrier:'', claim_number:'', adjuster_name:'',
@@ -13,7 +39,7 @@ export default function JobForm({ job, onSave, onClose, onDelete }) {
     contract_amount:'', payout_amount:'', rcv_amount:'', acv_amount:'',
     depreciation_held:'', supplement_amount:'',
     trades:'', notes:'', job_month:'', job_year:'2026',
-    ...job
+    ...(cleanJob || {})
   });
   const [saving, setSaving] = useState(false);
   const [selectedTrades, setSelectedTrades] = useState(job?.trades ? job.trades.split(',').map(t=>t.trim()) : []);
@@ -32,7 +58,22 @@ export default function JobForm({ job, onSave, onClose, onDelete }) {
     if (!form.client_name) return alert('Client name required.');
     setSaving(true);
     const payload = {
-      ...form,
+      client_name: form.client_name,
+      address: form.address,
+      city: form.city,
+      state: form.state,
+      job_type: form.job_type,
+      carrier: form.carrier,
+      claim_number: form.claim_number,
+      adjuster_name: form.adjuster_name,
+      claim_status: form.claim_status,
+      date_of_loss: form.date_of_loss || null,
+      inspection_date: form.inspection_date || null,
+      contract_date: form.contract_date || null,
+      trades: form.trades,
+      notes: form.notes,
+      job_month: form.job_month,
+      job_year: form.job_year,
       contract_amount: parseFloat(form.contract_amount) || null,
       payout_amount: parseFloat(form.payout_amount) || null,
       rcv_amount: parseFloat(form.rcv_amount) || null,
