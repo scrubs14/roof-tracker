@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { supabase } from '../lib/supabase';
 
+const COMPANIES = ['The Roof Guys', 'Provision Roofing'];
 const CARRIERS = ['State Farm','Allstate','Farmers','Liberty Mutual','Nationwide','USAA','Travelers','Progressive','Tennessee Farmers','Encompass','Erie','Auto-Owners','Other'];
 const STATUSES = ['Approved','Denied','Pending','Supplement Pending','Partial Approval','Re-inspection','Paid - RCV','Paid - ACV'];
 const TRADES = ['Roof','Gutters','Siding','Windows','Decking','Fencing','HVAC','Skylights','Fascia/Soffit','Other'];
@@ -12,6 +13,7 @@ function pct(a,b) { return b > 0 ? ((a/b)*100).toFixed(1)+'%' : '—'; }
 export default function Dashboard({ onAdd, onSelect }) {
   const [jobs, setJobs] = useState([]);
   const [filter, setFilter] = useState('All');
+  const [companyFilter, setCompanyFilter] = useState('All');
   const [carrierFilter, setCarrierFilter] = useState('All');
   const [sortBy, setSortBy] = useState('date');
   const [search, setSearch] = useState('');
@@ -33,6 +35,7 @@ export default function Dashboard({ onAdd, onSelect }) {
   // Filtered jobs
   const filtered = jobs.filter(j => {
     if (filter !== 'All' && j.job_type !== filter) return false;
+    if (companyFilter !== 'All' && j.company !== companyFilter) return false;
     if (carrierFilter !== 'All' && j.carrier !== carrierFilter) return false;
     if (search && !`${j.client_name} ${j.address} ${j.claim_number}`.toLowerCase().includes(search.toLowerCase())) return false;
     return true;
@@ -93,6 +96,31 @@ export default function Dashboard({ onAdd, onSelect }) {
         ))}
       </div>
 
+      {/* COMPANY BREAKDOWN */}
+      <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:12, marginBottom:20 }}>
+        {COMPANIES.map(company => {
+          const compJobs = jobs.filter(j => j.company === company);
+          const compContract = compJobs.reduce((s,j) => s+(parseFloat(j.contract_amount)||0), 0);
+          const compPayout = compJobs.reduce((s,j) => s+(parseFloat(j.payout_amount)||0), 0);
+          const compPct = compContract > 0 ? (compPayout/compContract*100).toFixed(1) : 0;
+          const isRG = company === 'The Roof Guys';
+          return (
+            <div key={company} style={{ background:'var(--card)', border:`1px solid ${isRG ? 'rgba(76,175,128,0.3)' : 'rgba(200,146,42,0.3)'}`, borderRadius:10, padding:18 }}>
+              <div style={{ display:'flex', alignItems:'center', gap:10, marginBottom:14 }}>
+                <div style={{ width:10, height:10, borderRadius:'50%', background: isRG ? 'var(--green)' : 'var(--gold)' }} />
+                <div style={{ fontFamily:'var(--font-d)', fontSize:18, fontWeight:800, textTransform:'uppercase', color:'var(--white)' }}>{company}</div>
+                <div style={{ marginLeft:'auto', fontSize:12, color:'var(--dim)' }}>{compJobs.length} jobs</div>
+              </div>
+              <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr 1fr', gap:10 }}>
+                <div><div style={{ fontSize:10, letterSpacing:1.5, textTransform:'uppercase', color:'var(--dim)', marginBottom:4 }}>Contract</div><div style={{ fontFamily:'var(--font-d)', fontSize:20, fontWeight:800, color:'var(--white)' }}>{fmtS(compContract)}</div></div>
+                <div><div style={{ fontSize:10, letterSpacing:1.5, textTransform:'uppercase', color:'var(--dim)', marginBottom:4 }}>My Payout</div><div style={{ fontFamily:'var(--font-d)', fontSize:20, fontWeight:800, color:'var(--green)' }}>{fmtS(compPayout)}</div></div>
+                <div><div style={{ fontSize:10, letterSpacing:1.5, textTransform:'uppercase', color:'var(--dim)', marginBottom:4 }}>Payout %</div><div style={{ fontFamily:'var(--font-d)', fontSize:20, fontWeight:800, color: compPct >= 35 ? 'var(--green)' : compPct >= 20 ? 'var(--gold)' : 'var(--dim)' }}>{compPct}%</div></div>
+              </div>
+            </div>
+          );
+        })}
+      </div>
+
       {/* CARRIER ANALYTICS */}
       {carrierList.length > 0 && (
         <div style={{ background:'var(--card)', border:'1px solid var(--border)', borderRadius:10, padding:20, marginBottom:20 }}>
@@ -142,6 +170,10 @@ export default function Dashboard({ onAdd, onSelect }) {
         {['All','Insurance','Retail'].map(f => (
           <button key={f} onClick={()=>setFilter(f)} style={{ background: filter===f ? 'var(--gold)' : 'none', border:`1px solid ${filter===f ? 'var(--gold)' : 'var(--border)'}`, color: filter===f ? '#000' : 'var(--dim)', fontWeight: filter===f ? 700 : 400, fontSize:12, padding:'7px 16px', borderRadius:6, cursor:'pointer' }}>{f}</button>
         ))}
+        <div style={{ width:1, height:24, background:'var(--border)' }} />
+        {['All','The Roof Guys','Provision Roofing'].map(c => (
+          <button key={c} onClick={()=>setCompanyFilter(c)} style={{ background: companyFilter===c ? 'var(--green)' : 'none', border:`1px solid ${companyFilter===c ? 'var(--green)' : 'var(--border)'}`, color: companyFilter===c ? '#000' : 'var(--dim)', fontWeight: companyFilter===c ? 700 : 400, fontSize:12, padding:'7px 16px', borderRadius:6, cursor:'pointer' }}>{c === 'All' ? 'All Companies' : c}</button>
+        ))}
         <select style={{ ...sel, width:'auto' }} value={carrierFilter} onChange={e=>setCarrierFilter(e.target.value)}>
           <option value="All">All Carriers</option>
           {CARRIERS.map(c => <option key={c}>{c}</option>)}
@@ -182,7 +214,7 @@ export default function Dashboard({ onAdd, onSelect }) {
             <table style={{ width:'100%', borderCollapse:'collapse', minWidth:900 }}>
               <thead>
                 <tr style={{ borderBottom:'1px solid var(--border)', background:'var(--surface)' }}>
-                  {['Client','Address','Type','Carrier / Status','Claim #','Trades','Contract','Payout','Payout %',''].map(h => (
+                  {['Client','Address','Company','Type','Carrier / Status','Claim #','Trades','Contract','Payout','Payout %',''].map(h => (
                     <th key={h} style={{ textAlign:'left', padding:'10px 14px', fontSize:10, letterSpacing:1, textTransform:'uppercase', color:'var(--dim)', fontWeight:500, whiteSpace:'nowrap' }}>{h}</th>
                   ))}
                 </tr>
@@ -197,6 +229,9 @@ export default function Dashboard({ onAdd, onSelect }) {
                       onMouseLeave={e=>e.currentTarget.style.background='transparent'}>
                       <td style={{ padding:'12px 14px', fontWeight:600, color:'var(--white)', whiteSpace:'nowrap' }}>{job.client_name}</td>
                       <td style={{ padding:'12px 14px', fontSize:12, color:'var(--dim)', maxWidth:160, overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap' }}>{job.address}</td>
+                      <td style={{ padding:'12px 14px' }}>
+                        <span style={{ fontSize:11, fontWeight:600, padding:'3px 8px', borderRadius:10, background: job.company==='The Roof Guys' ? 'rgba(76,175,128,0.15)' : 'rgba(200,146,42,0.15)', color: job.company==='The Roof Guys' ? 'var(--green)' : 'var(--gold)', whiteSpace:'nowrap' }}>{job.company || '—'}</span>
+                      </td>
                       <td style={{ padding:'12px 14px' }}>
                         <span style={{ fontSize:11, fontWeight:600, padding:'3px 8px', borderRadius:10, background: job.job_type==='Insurance' ? 'rgba(74,142,194,0.15)' : 'rgba(155,127,168,0.15)', color: job.job_type==='Insurance' ? 'var(--blue)' : 'var(--purple)' }}>{job.job_type}</span>
                       </td>
@@ -231,4 +266,4 @@ export default function Dashboard({ onAdd, onSelect }) {
   );
 }
 
-export { CARRIERS, STATUSES, TRADES };
+export { CARRIERS, STATUSES, TRADES, COMPANIES };

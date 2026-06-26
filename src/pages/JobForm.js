@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { supabase } from '../lib/supabase';
-import { CARRIERS, STATUSES, TRADES } from './Dashboard';
+import { CARRIERS, STATUSES, TRADES, COMPANIES } from './Dashboard';
 
 const MONTHS = ['January','February','March','April','May','June','July','August','September','October','November','December'];
 
@@ -11,6 +11,7 @@ export default function JobForm({ job, onSave, onClose, onDelete }) {
     address: job.address || '',
     city: job.city || 'Clarksville',
     state: job.state || 'TN',
+    company: job.company || 'The Roof Guys',
     job_type: job.job_type || 'Insurance',
     carrier: job.carrier || '',
     claim_number: job.claim_number || '',
@@ -34,7 +35,7 @@ export default function JobForm({ job, onSave, onClose, onDelete }) {
 
   const [form, setForm] = useState({
     client_name:'', address:'', city:'Clarksville', state:'TN',
-    job_type:'Insurance', carrier:'', claim_number:'', adjuster_name:'',
+    company:'The Roof Guys', job_type:'Insurance', carrier:'', claim_number:'', adjuster_name:'',
     claim_status:'Pending', date_of_loss:'', inspection_date:'', contract_date:'',
     contract_amount:'', payout_amount:'', rcv_amount:'', acv_amount:'',
     depreciation_held:'', supplement_amount:'',
@@ -58,6 +59,7 @@ export default function JobForm({ job, onSave, onClose, onDelete }) {
     if (!form.client_name) return alert('Client name required.');
     setSaving(true);
     const payload = {
+      company: form.company,
       client_name: form.client_name,
       address: form.address,
       city: form.city,
@@ -119,6 +121,7 @@ export default function JobForm({ job, onSave, onClose, onDelete }) {
           <div style={{ gridColumn:'1/-1', fontSize:10, letterSpacing:2, textTransform:'uppercase', color:'var(--gold)', fontWeight:600, paddingBottom:6, borderBottom:'1px solid var(--border)' }}>Client Information</div>
 
           {fg(<><label style={lbl}>Client Name *</label><input style={inp} value={form.client_name} onChange={e=>set('client_name',e.target.value)} placeholder="Jane Smith" /></>)}
+          {fg(<><label style={lbl}>Company</label><select style={sel} value={form.company} onChange={e=>set('company',e.target.value)}>{COMPANIES.map(c=><option key={c}>{c}</option>)}</select></>)}
           {fg(<><label style={lbl}>Job Type</label><select style={sel} value={form.job_type} onChange={e=>set('job_type',e.target.value)}><option>Insurance</option><option>Retail</option></select></>)}
           {fg(<><label style={lbl}>Property Address</label><input style={inp} value={form.address} onChange={e=>set('address',e.target.value)} placeholder="123 Main St" /></>, 2)}
           {fg(<><label style={lbl}>City</label><input style={inp} value={form.city} onChange={e=>set('city',e.target.value)} /></>)}
