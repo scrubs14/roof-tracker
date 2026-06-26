@@ -19,9 +19,9 @@ export default function App() {
           Roof <span style={{ color:'var(--gold)' }}>Jobs</span> Tracker
         </div>
         <div style={{ fontSize:11, letterSpacing:2, color:'var(--dim)', marginBottom:28 }}>THE ROOF GUYS · PRIVATE</div>
-        <input type="password" value={pass} onChange={e=>setPass(e.target.value)} onKeyDown={e=>e.key==='Enter'&&(pass==='RoofGuys2026'?(sessionStorage.setItem('roof_tracker_auth','true'),setAuthed(true)):alert('Wrong password'))}
+        <input type="password" value={pass} onChange={e=>setPass(e.target.value)} onKeyDown={e=>e.key==='Enter'&&(pass==='RoofGuys2026'?(sessionStorage.setItem('roof_tracker_auth','true'),setAuthed(true)):alert('Incorrect password. Try: RoofGuys2026'))}
           placeholder="Password" style={{ width:'100%', background:'var(--surface)', border:'1px solid var(--border)', borderRadius:8, color:'var(--white)', fontSize:15, padding:'11px 14px', outline:'none', marginBottom:14 }} />
-        <button onClick={()=>pass==='RoofGuys2026'?(sessionStorage.setItem('roof_tracker_auth','true'),setAuthed(true)):alert('Wrong password')}
+        <button onClick={()=>pass==='RoofGuys2026'?(sessionStorage.setItem('roof_tracker_auth','true'),setAuthed(true)):alert('Incorrect password. Try: RoofGuys2026')}
           style={{ width:'100%', background:'var(--gold)', border:'none', borderRadius:8, color:'#000', fontFamily:'var(--font-d)', fontSize:18, fontWeight:800, textTransform:'uppercase', letterSpacing:1, padding:12, cursor:'pointer' }}>
           Enter
         </button>
