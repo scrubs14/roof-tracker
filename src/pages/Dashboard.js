@@ -2,7 +2,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { supabase } from '../lib/supabase';
 
 const COMPANIES = ['The Roof Guys', 'Provision Roofing'];
-const CARRIERS = ['State Farm','Allstate','Farmers','Liberty Mutual','Nationwide','USAA','Travelers','Progressive','Tennessee Farmers','Encompass','Erie','Auto-Owners','Other'];
+const CARRIERS = ['State Farm','Allstate','Farmers','Liberty Mutual','Nationwide','USAA','Travelers','Progressive','Tennessee Farmers','Farm Bureau','Kentucky Farm Bureau','Encompass','Erie','Auto-Owners','Other'];
 const STATUSES = ['Approved','Denied','Pending','Supplement Pending','Partial Approval','Re-inspection','Paid - RCV','Paid - ACV'];
 const TRADES = ['Roof','Gutters','Siding','Windows','Decking','Fencing','HVAC','Skylights','Fascia/Soffit','Other'];
 
