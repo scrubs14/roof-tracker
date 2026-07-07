@@ -49,6 +49,11 @@ export default function Dashboard({ onAdd, onSelect }) {
   // Analytics
   const insJobs = jobs.filter(j => j.job_type === 'Insurance');
   const retJobs = jobs.filter(j => j.job_type === 'Retail');
+  const roofGuysJobs = jobs.filter(j => j.company === 'The Roof Guys');
+  const now = new Date();
+  const thisMonth = now.toLocaleString('en-US', { month:'long' });
+  const thisYear = String(now.getFullYear());
+  const thisMonthJobs = jobs.filter(j => j.job_month === thisMonth && j.job_year === thisYear);
   const totalContract = filtered.reduce((s,j) => s+(parseFloat(j.contract_amount)||0), 0);
   const totalPayout = filtered.reduce((s,j) => s+(parseFloat(j.payout_amount)||0), 0);
   const avgPct = filtered.filter(j=>j.contract_amount>0).length > 0
@@ -82,8 +87,10 @@ export default function Dashboard({ onAdd, onSelect }) {
       <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fill,minmax(180px,1fr))', gap:12, marginBottom:24 }}>
         {[
           { label:'Total Contract Value', value:fmtS(jobs.reduce((s,j)=>s+(parseFloat(j.contract_amount)||0),0)), color:'var(--white)', sub:`${jobs.length} total jobs` },
+          { label:'Monthly Contract Value', value:fmtS(thisMonthJobs.reduce((s,j)=>s+(parseFloat(j.contract_amount)||0),0)), color:'var(--white)', sub:`${thisMonthJobs.length} jobs this month` },
           { label:'Total Payout to Me', value:fmtS(jobs.reduce((s,j)=>s+(parseFloat(j.payout_amount)||0),0)), color:'var(--green)', sub:'Net after splits' },
-          { label:'Avg Payout %', value:pct(jobs.reduce((s,j)=>s+(parseFloat(j.payout_amount)||0),0), jobs.reduce((s,j)=>s+(parseFloat(j.contract_amount)||0),0)), color:'var(--gold)', sub:'Of contract value' },
+          { label:'Monthly Payout to Me', value:fmtS(thisMonthJobs.reduce((s,j)=>s+(parseFloat(j.payout_amount)||0),0)), color:'var(--green)', sub:'This month' },
+          { label:'Avg Payout % (Roof Guys)', value:pct(roofGuysJobs.reduce((s,j)=>s+(parseFloat(j.payout_amount)||0),0), roofGuysJobs.reduce((s,j)=>s+(parseFloat(j.contract_amount)||0),0)), color:'var(--gold)', sub:`${roofGuysJobs.length} Roof Guys jobs` },
           { label:'Insurance Jobs', value:insJobs.length, color:'var(--blue)', sub:`${fmtS(insJobs.reduce((s,j)=>s+(parseFloat(j.contract_amount)||0),0))} contract` },
           { label:'Retail Jobs', value:retJobs.length, color:'var(--purple)', sub:`${fmtS(retJobs.reduce((s,j)=>s+(parseFloat(j.contract_amount)||0),0))} contract` },
           { label:'Approved Claims', value:insJobs.filter(j=>j.claim_status==='Approved'||j.claim_status?.includes('Paid')).length, color:'var(--green)', sub:`of ${insJobs.length} insurance jobs` },
