@@ -362,58 +362,37 @@ export default function App() {
   const [filter, setFilter] = useState('All');
   const [saving, setSaving] = useState(false);
 
-  // Load from Supabase
+  // Load from localStorage
   useEffect(() => {
-    (async () => {
-      setLoading(true);
-      const { data } = await sb.from('rg_clients').select('*').order('created_at', { ascending: false });
-      if (data) setClients(data.map(r => ({ ...r, trades: r.trades || [newTrade('Roof')], outOfPocket: r.out_of_pocket || '', insuranceCollected: r.insurance_collected || '', splitCommission: r.split_commission || false, splitWith: r.split_with || '' })));
-      setLoading(false);
-    })();
+    try {
+      const saved = localStorage.getItem('rg_clients_v2');
+      if (saved) setClients(JSON.parse(saved));
+    } catch(e) {}
+    setLoading(false);
   }, []);
 
-  // Debounced save to Supabase
-  const saveClient = async (client) => {
-    setSaving(true);
-    const payload = {
-      name: client.name, trades: client.trades,
-      out_of_pocket: parseFloat(client.outOfPocket) || null,
-      insurance_collected: parseFloat(client.insuranceCollected) || null,
-      split_commission: client.splitCommission || false,
-      split_with: client.splitWith || null,
-      coc_sent: client.cocSent, closed: client.closed, notes: client.notes,
-    };
-    if (client.id) {
-      await sb.from('rg_clients').update(payload).eq('id', client.id);
-    } else {
-      const { data } = await sb.from('rg_clients').insert([payload]).select();
-      if (data?.[0]) {
-        setClients(prev => prev.map(c => c === client ? { ...client, id: data[0].id } : c));
-      }
+  // Save to localStorage whenever clients change
+  useEffect(() => {
+    if (!loading) {
+      localStorage.setItem('rg_clients_v2', JSON.stringify(clients));
     }
-    setSaving(false);
+  }, [clients, loading]);
+
+  const saveClient = (client) => {
+    setSaving(true);
+    setTimeout(() => setSaving(false), 300);
   };
 
   const updateClient = (updated) => {
     setClients(prev => prev.map(c => c.id === updated.id ? updated : c));
-    if (updated.id) saveClient(updated);
   };
 
-  const addClient = async () => {
-    const c = newClient();
-    const { data, error } = await sb.from('rg_clients').insert([{
-      name: '', trades: c.trades, out_of_pocket: null, insurance_collected: null,
-      split_commission: false, split_with: null, coc_sent: false, closed: false, notes: ''
-    }]).select();
-    if (error) { alert('Error adding client: ' + error.message); return; }
-    if (data?.[0]) {
-      const newC = { ...c, id: data[0].id };
-      setClients(prev => [newC, ...prev]);
-    }
+  const addClient = () => {
+    const c = { ...newClient(), id: Date.now().toString() };
+    setClients(prev => [c, ...prev]);
   };
 
-  const deleteClient = async (id) => {
-    await sb.from('rg_clients').delete().eq('id', id);
+  const deleteClient = (id) => {
     setClients(prev => prev.filter(c => c.id !== id));
   };
 
