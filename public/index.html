@@ -167,8 +167,9 @@ function setFilter(f){
 
 // ── STATS ─────────────────────────────────────────────────────────
 function renderStats(){
-  const full=clients.filter(c=>!c.splitCommission);
-  const splits=clients.filter(c=>c.splitCommission);
+  const isSplit=c=>c.splitCommission===true||c.splitCommission==='true';
+  const full=clients.filter(c=>!isSplit(c));
+  const splits=clients.filter(c=>isSplit(c));
   const fContract=full.reduce((s,c)=>s+totalContract(c),0);
   const fComm=full.reduce((s,c)=>s+totalCommission(c),0);
   const sContract=splits.reduce((s,c)=>s+totalContract(c),0);
