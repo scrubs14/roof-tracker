@@ -401,9 +401,11 @@ export default function App() {
 
   const addClient = async () => {
     const c = newClient();
-    const { data } = await sb.from('rg_clients').insert([{
-      name: '', trades: c.trades, out_of_pocket: null, insurance_collected: null, coc_sent: false, closed: false, notes: ''
+    const { data, error } = await sb.from('rg_clients').insert([{
+      name: '', trades: c.trades, out_of_pocket: null, insurance_collected: null,
+      split_commission: false, split_with: null, coc_sent: false, closed: false, notes: ''
     }]).select();
+    if (error) { alert('Error adding client: ' + error.message); return; }
     if (data?.[0]) {
       const newC = { ...c, id: data[0].id };
       setClients(prev => [newC, ...prev]);
