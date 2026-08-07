@@ -445,19 +445,65 @@ export default function App() {
       <main style={{ maxWidth: 900, margin: '0 auto', padding: '24px 20px' }}>
 
         {/* STATS */}
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill,minmax(160px,1fr))', gap: 12, marginBottom: 20 }}>
-          {[
-            { label: 'Total Contract', value: fmtS(totalContract), color: 'var(--white)' },
-            { label: 'Total Commission', value: fmtS(totalCommission), color: 'var(--green)' },
-            { label: 'Active Clients', value: clients.filter(c => !c.closed).length, color: 'var(--gold)' },
-            { label: 'Closed', value: closedCount, color: 'var(--green)' },
-          ].map(s => (
-            <div key={s.label} style={{ background: 'var(--card)', border: '1px solid var(--border)', borderRadius: 10, padding: '14px 16px' }}>
-              <div style={{ fontSize: 9, letterSpacing: 1.5, textTransform: 'uppercase', color: 'var(--dim)', marginBottom: 5 }}>{s.label}</div>
-              <div style={{ fontFamily: 'var(--font-d)', fontSize: 28, fontWeight: 900, color: s.color, lineHeight: 1 }}>{s.value}</div>
-            </div>
-          ))}
-        </div>
+        {(() => {
+          const splitClients = clients.filter(c => c.splitCommission);
+          const fullClients = clients.filter(c => !c.splitCommission);
+          const fullContract = fullClients.reduce((s,c) => s + c.trades.reduce((ts,t) => ts + (parseFloat(t.contractPrice)||0), 0), 0);
+          const fullCommission = fullClients.reduce((s,c) => s + c.trades.reduce((ts,t) => ts + calcCommission(t), 0), 0);
+          const splitContract = splitClients.reduce((s,c) => s + c.trades.reduce((ts,t) => ts + (parseFloat(t.contractPrice)||0), 0), 0);
+          const splitCommissionTotal = splitClients.reduce((s,c) => s + c.trades.reduce((ts,t) => ts + calcCommission(t), 0), 0);
+          const splitYours = splitCommissionTotal * 0.5;
+          return (
+            <>
+              {/* Full deal stats */}
+              <div style={{ fontSize: 9, letterSpacing: 2, textTransform: 'uppercase', color: 'var(--dim)', fontWeight: 700, marginBottom: 8 }}>Full Deals</div>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill,minmax(160px,1fr))', gap: 12, marginBottom: 16 }}>
+                {[
+                  { label: 'Total Contract', value: fmtS(fullContract), color: 'var(--white)' },
+                  { label: 'Total Commission', value: fmtS(fullCommission), color: 'var(--green)' },
+                  { label: 'Active Clients', value: fullClients.filter(c => !c.closed).length, color: 'var(--gold)' },
+                  { label: 'Closed', value: fullClients.filter(c => c.closed).length, color: 'var(--green)' },
+                ].map(s => (
+                  <div key={s.label} style={{ background: 'var(--card)', border: '1px solid var(--border)', borderRadius: 10, padding: '14px 16px' }}>
+                    <div style={{ fontSize: 9, letterSpacing: 1.5, textTransform: 'uppercase', color: 'var(--dim)', marginBottom: 5 }}>{s.label}</div>
+                    <div style={{ fontFamily: 'var(--font-d)', fontSize: 28, fontWeight: 900, color: s.color, lineHeight: 1 }}>{s.value}</div>
+                  </div>
+                ))}
+              </div>
+
+              {/* Split deal stats — only show if any exist */}
+              {splitClients.length > 0 && (
+                <>
+                  <div style={{ fontSize: 9, letterSpacing: 2, textTransform: 'uppercase', color: 'var(--blue)', fontWeight: 700, marginBottom: 8 }}>Split Deals</div>
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill,minmax(160px,1fr))', gap: 12, marginBottom: 16 }}>
+                    {[
+                      { label: 'Split Contract', value: fmtS(splitContract), color: 'var(--white)' },
+                      { label: 'Full Commission', value: fmtS(splitCommissionTotal), color: 'var(--dim)' },
+                      { label: 'Your Split Payout', value: fmtS(splitYours), color: 'var(--green)' },
+                      { label: 'Split Clients', value: splitClients.length, color: 'var(--blue)' },
+                    ].map(s => (
+                      <div key={s.label} style={{ background: 'var(--card)', border: '1px solid rgba(74,142,194,0.3)', borderRadius: 10, padding: '14px 16px' }}>
+                        <div style={{ fontSize: 9, letterSpacing: 1.5, textTransform: 'uppercase', color: 'var(--dim)', marginBottom: 5 }}>{s.label}</div>
+                        <div style={{ fontFamily: 'var(--font-d)', fontSize: 28, fontWeight: 900, color: s.color, lineHeight: 1 }}>{s.value}</div>
+                      </div>
+                    ))}
+                  </div>
+
+                  {/* Combined total bar */}
+                  <div style={{ background: 'linear-gradient(135deg,rgba(61,184,122,0.1),rgba(61,184,122,0.03))', border: '1px solid rgba(61,184,122,0.25)', borderRadius: 10, padding: '14px 20px', marginBottom: 16, display: 'flex', gap: 32, flexWrap: 'wrap', alignItems: 'center' }}>
+                    <div>
+                      <div style={{ fontSize: 9, letterSpacing: 2, textTransform: 'uppercase', color: 'var(--green)', marginBottom: 3 }}>Total You Take Home</div>
+                      <div style={{ fontFamily: 'var(--font-d)', fontSize: 32, fontWeight: 900, color: 'var(--green)' }}>{fmtS(fullCommission + splitYours)}</div>
+                    </div>
+                    <div style={{ fontSize: 12, color: 'var(--dim)' }}>
+                      {fmtS(fullCommission)} full deals + {fmtS(splitYours)} split deals
+                    </div>
+                  </div>
+                </>
+              )}
+            </>
+          );
+        })()}
 
         {/* FILTERS */}
         <div style={{ display: 'flex', gap: 8, marginBottom: 16, flexWrap: 'wrap', alignItems: 'center' }}>
