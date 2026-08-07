@@ -354,8 +354,6 @@ function ClientCard({ client, onUpdate, onDelete }) {
 }
 
 // ── MAIN APP ──────────────────────────────────────────────────────
-const PASS = 'RoofGuys2026';
-
 export default function App() {
 
   const [clients, setClients] = useState([]);
@@ -372,7 +370,7 @@ export default function App() {
       if (data) setClients(data.map(r => ({ ...r, trades: r.trades || [newTrade('Roof')], outOfPocket: r.out_of_pocket || '', insuranceCollected: r.insurance_collected || '', splitCommission: r.split_commission || false, splitWith: r.split_with || '' })));
       setLoading(false);
     })();
-  }, [authed]);
+  }, []);
 
   // Debounced save to Supabase
   const saveClient = async (client) => {
