@@ -50,6 +50,7 @@ function newClient() {
   return {
     id: null, name: '', trades: [newTrade('Roof')],
     outOfPocket: '', insuranceCollected: '',
+    splitCommission: false, splitWith: '',
     cocSent: false, closed: false, notes: ''
   };
 }
@@ -218,7 +219,7 @@ function ClientCard({ client, onUpdate, onDelete }) {
           <div style={{ fontSize: 11, color: 'var(--dim)', marginTop: 2 }}>
             {client.trades.map(t => t.type).join(' · ')}
             {totalContract > 0 && <span style={{ color: 'var(--text)', marginLeft: 10 }}>{fmt(totalContract)} contract</span>}
-            {totalCommission > 0 && <span style={{ color: 'var(--green)', marginLeft: 8 }}>{fmt(totalCommission)} commission</span>}
+            {totalCommission > 0 && <span style={{ color: 'var(--green)', marginLeft: 8 }}>{client.splitCommission ? fmt(totalCommission * 0.5) + ' your split' : fmt(totalCommission) + ' commission'}</span>}
             {client.closed && <span style={{ color: 'var(--green)', marginLeft: 8, fontWeight: 700 }}>✓ CLOSED</span>}
             {client.cocSent && !client.closed && <span style={{ color: 'var(--gold)', marginLeft: 8 }}>COC Sent</span>}
           </div>
@@ -256,7 +257,8 @@ function ClientCard({ client, onUpdate, onDelete }) {
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill,minmax(160px,1fr))', gap: 12, marginBottom: 14 }}>
                 {[
                   { label: 'Total Contract', value: fmt(totalContract), color: 'var(--white)' },
-                  { label: 'Your Commission', value: fmt(totalCommission), color: 'var(--green)' },
+                  { label: 'Full Commission', value: fmt(totalCommission), color: client.splitCommission ? 'var(--dim)' : 'var(--green)' },
+            ...(client.splitCommission ? [{ label: 'Your Split (50%)', value: fmt(totalCommission * 0.5), color: 'var(--green)' }] : []),
                   { label: 'Remaining to Collect', value: fmt(remaining), color: remaining > 0 ? 'var(--gold)' : 'var(--green)' },
                 ].map(s => (
                   <div key={s.label}>
@@ -295,6 +297,30 @@ function ClientCard({ client, onUpdate, onDelete }) {
               )}
             </div>
           )}
+
+          {/* Split Commission */}
+          <div style={{ background: client.splitCommission ? 'rgba(74,142,194,0.08)' : 'var(--surface)', border: '1px solid ' + (client.splitCommission ? 'rgba(74,142,194,0.3)' : 'var(--border)'), borderRadius: 10, padding: '14px 16px', marginBottom: 14 }}>
+            <label style={{ display: 'flex', alignItems: 'center', gap: 10, cursor: 'pointer' }}>
+              <input type="checkbox" checked={client.splitCommission} onChange={e => onUpdate({ ...client, splitCommission: e.target.checked })}
+                style={{ width: 16, height: 16, accentColor: 'var(--blue)', cursor: 'pointer' }} />
+              <div style={{ flex: 1 }}>
+                <div style={{ fontSize: 13, color: client.splitCommission ? 'var(--blue)' : 'var(--text)', fontWeight: client.splitCommission ? 700 : 400 }}>Split Commission with Another Rep</div>
+                <div style={{ fontSize: 11, color: 'var(--dim)' }}>Your cut becomes 50% of the total commission</div>
+              </div>
+              {client.splitCommission && totalCommission > 0 && (
+                <div style={{ textAlign: 'right' }}>
+                  <div style={{ fontSize: 9, color: 'var(--dim)', textTransform: 'uppercase', letterSpacing: 1 }}>Your Share</div>
+                  <div style={{ fontFamily: 'var(--font-d)', fontSize: 22, fontWeight: 800, color: 'var(--green)' }}>{fmt(totalCommission * 0.5)}</div>
+                </div>
+              )}
+            </label>
+            {client.splitCommission && (
+              <div style={{ marginTop: 10 }}>
+                <input value={client.splitWith || ''} onChange={e => onUpdate({ ...client, splitWith: e.target.value })}
+                  placeholder="Other rep's name" style={{ background: 'var(--card2)', border: '1px solid var(--border)', borderRadius: 6, color: 'var(--white)', fontFamily: 'var(--font-b)', fontSize: 13, padding: '8px 10px', outline: 'none', width: '100%', maxWidth: 280 }} />
+              </div>
+            )}
+          </div>
 
           {/* Notes */}
           <div style={{ marginBottom: 14 }}>
@@ -345,7 +371,7 @@ export default function App() {
     (async () => {
       setLoading(true);
       const { data } = await sb.from('rg_clients').select('*').order('created_at', { ascending: false });
-      if (data) setClients(data.map(r => ({ ...r, trades: r.trades || [newTrade('Roof')] })));
+      if (data) setClients(data.map(r => ({ ...r, trades: r.trades || [newTrade('Roof')], outOfPocket: r.out_of_pocket || '', insuranceCollected: r.insurance_collected || '', splitCommission: r.split_commission || false, splitWith: r.split_with || '' })));
       setLoading(false);
     })();
   }, [authed]);
@@ -357,6 +383,8 @@ export default function App() {
       name: client.name, trades: client.trades,
       out_of_pocket: parseFloat(client.outOfPocket) || null,
       insurance_collected: parseFloat(client.insuranceCollected) || null,
+      split_commission: client.splitCommission || false,
+      split_with: client.splitWith || null,
       coc_sent: client.cocSent, closed: client.closed, notes: client.notes,
     };
     if (client.id) {
