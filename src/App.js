@@ -357,8 +357,7 @@ function ClientCard({ client, onUpdate, onDelete }) {
 const PASS = 'RoofGuys2026';
 
 export default function App() {
-  const [authed, setAuthed] = useState(!!sessionStorage.getItem('rg_auth'));
-  const [pw, setPw] = useState('');
+
   const [clients, setClients] = useState([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
@@ -367,7 +366,6 @@ export default function App() {
 
   // Load from Supabase
   useEffect(() => {
-    if (!authed) return;
     (async () => {
       setLoading(true);
       const { data } = await sb.from('rg_clients').select('*').order('created_at', { ascending: false });
@@ -432,24 +430,6 @@ export default function App() {
   const totalCommission = clients.reduce((s, c) => s + c.trades.reduce((ts, t) => ts + calcCommission(t), 0), 0);
   const closedCount = clients.filter(c => c.closed).length;
 
-  if (!authed) return (
-    <div style={{ minHeight: '100vh', background: 'var(--black)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 20 }}>
-      <div style={{ background: 'var(--card)', border: '1px solid var(--border)', borderRadius: 14, padding: 40, width: '100%', maxWidth: 360, textAlign: 'center' }}>
-        <div style={{ fontFamily: 'var(--font-d)', fontSize: 28, fontWeight: 900, textTransform: 'uppercase', letterSpacing: 2, color: 'var(--white)', marginBottom: 4 }}>
-          Roof <span style={{ color: 'var(--gold)' }}>Guys</span>
-        </div>
-        <div style={{ fontSize: 11, letterSpacing: 2, color: 'var(--dim)', marginBottom: 28 }}>CLIENT TRACKER · PRIVATE</div>
-        <input type="password" value={pw} onChange={e => setPw(e.target.value)}
-          onKeyDown={e => e.key === 'Enter' && pw === PASS && (sessionStorage.setItem('rg_auth', '1'), setAuthed(true))}
-          placeholder="Password" style={{ width: '100%', background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 8, color: 'var(--white)', fontSize: 15, padding: '11px 14px', outline: 'none', marginBottom: 12, textAlign: 'center' }} />
-        <button onClick={() => pw === PASS ? (sessionStorage.setItem('rg_auth', '1'), setAuthed(true)) : alert('Wrong password')}
-          style={{ width: '100%', background: 'var(--gold)', border: 'none', borderRadius: 8, color: '#000', fontFamily: 'var(--font-d)', fontSize: 18, fontWeight: 900, textTransform: 'uppercase', letterSpacing: 1, padding: 13, cursor: 'pointer' }}>
-          Enter
-        </button>
-      </div>
-    </div>
-  );
-
   return (
     <div style={{ minHeight: '100vh', background: 'var(--black)' }}>
       <header style={{ background: 'var(--surface)', borderBottom: '1px solid var(--border)', padding: '0 24px', height: 56, display: 'flex', alignItems: 'center', justifyContent: 'space-between', position: 'sticky', top: 0, zIndex: 100 }}>
@@ -459,7 +439,6 @@ export default function App() {
         <div style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
           {saving && <span style={{ fontSize: 11, color: 'var(--dim)' }}>Saving...</span>}
           <button onClick={addClient} style={{ background: 'var(--gold)', border: 'none', color: '#000', fontFamily: 'var(--font-d)', fontSize: 16, fontWeight: 900, textTransform: 'uppercase', letterSpacing: 1, padding: '7px 20px', borderRadius: 8, cursor: 'pointer' }}>+ Add Client</button>
-          <button onClick={() => { sessionStorage.removeItem('rg_auth'); setAuthed(false); }} style={{ background: 'none', border: '1px solid var(--border)', color: 'var(--dim)', fontSize: 11, padding: '6px 12px', borderRadius: 6, cursor: 'pointer' }}>Lock</button>
         </div>
       </header>
 
