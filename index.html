@@ -400,26 +400,44 @@ function toggleCard(id){
 }
 function updateField(id,field,val){
   const c=getClient(id);if(!c)return;
-  // Ensure booleans are stored as actual booleans
   if(field==='splitCommission'||field==='cocSent'||field==='closed')val=val===true||val==='true';
   c[field]=val;
-  save();
+  syncClient(c);
   renderStats();
-  // Re-render just this card
-  const el=document.getElementById('cc_'+id);
-  if(el){const tmp=document.createElement('div');tmp.innerHTML=clientHTML(c);el.outerHTML=tmp.firstChild.outerHTML;}
+  // Only re-render card for boolean fields that change card appearance
+  if(['splitCommission','cocSent','closed'].includes(field)){
+    const el=document.getElementById('cc_'+id);
+    if(el){const tmp=document.createElement('div');tmp.innerHTML=clientHTML(c);el.outerHTML=tmp.firstChild.outerHTML;}
+  }
 }
 function updateTrade(cid,idx,field,val){
   const c=getClient(cid);if(!c)return;
   c.trades[idx][field]=val;
-  save();renderStats();
-  const el=document.getElementById('cc_'+cid);
-  if(el){const tmp=document.createElement('div');tmp.innerHTML=clientHTML(c);el.outerHTML=tmp.firstChild.outerHTML;}
+  syncClient(c);renderStats();
+  // Re-render trade block only when type changes (UI structure changes)
+  if(['type','pitch','gutterSize','opPct'].includes(field)){
+    const tb=document.getElementById('tb_'+cid+'_'+idx);
+    if(tb){const tmp=document.createElement('div');tmp.innerHTML=tradeHTML(cid,c.trades[idx],idx,c.trades.length>1);tb.outerHTML=tmp.firstChild.outerHTML;}
+  } else {
+    // Just update the calc row without touching inputs
+    const tb=document.getElementById('tb_'+cid+'_'+idx);
+    if(!tb)return;
+    const t=c.trades[idx];
+    const q=parseFloat(t.qty)||0,cont=parseFloat(t.contractPrice)||0;
+    const b=buildCost(t),com=commission(t),payPct=cont>0?(com/cont*100):0;
+    let calcEl=tb.querySelector('.calc-row');
+    if(q>0&&cont>0){
+      const h='<div class="calc-item"><div class="cl">Build Cost</div><div class="cv" style="color:var(--red)">'+fmt(b)+'</div></div>'
+        +'<div class="calc-item"><div class="cl">Your Commission</div><div class="cv" style="color:'+(com>=0?'var(--green)':'var(--red)')+'">'+fmt(com)+'</div></div>'
+        +'<div class="calc-item"><div class="cl">Payout %</div><div class="cv" style="color:'+(payPct>=20?'var(--green)':payPct>=12?'var(--gold)':'var(--red)')+'">'+payPct.toFixed(1)+'%</div></div>';
+      if(calcEl){calcEl.innerHTML=h;}else{const d=document.createElement('div');d.className='calc-row';d.innerHTML=h;tb.appendChild(d);}
+    } else if(calcEl){calcEl.innerHTML='';}
+  }
 }
 function addTrade(cid){
   const c=getClient(cid);if(!c)return;
   c.trades.push(newTrade());
-  save();
+  syncClient(c);
   const el=document.getElementById('cc_'+cid);
   if(el){const tmp=document.createElement('div');tmp.innerHTML=clientHTML(c);el.outerHTML=tmp.firstChild.outerHTML;}
 }
