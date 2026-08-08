@@ -122,25 +122,29 @@ function debugData(){
 
 function load(){
   try{
-    // Try all possible storage keys
-    const keys=['rgclients_v3','rgclients_v2','rg_clients_v2','rg_clients'];
-    for(const k of keys){
-      const s=localStorage.getItem(k);
-      if(s){
+    // Scan ALL localStorage keys for any client data
+    const allKeys=Object.keys(localStorage);
+    let found=false;
+    // Try known keys first
+    const knownKeys=['rgclients_v3','rgclients_v2','rg_clients_v2','rg_clients'];
+    const tryKeys=[...knownKeys,...allKeys.filter(k=>!knownKeys.includes(k))];
+    for(const k of tryKeys){
+      try{
+        const s=localStorage.getItem(k);
+        if(!s)continue;
         const parsed=JSON.parse(s);
-        if(parsed&&parsed.length>0){
+        if(Array.isArray(parsed)&&parsed.length>0&&parsed[0].name!==undefined){
           clients=parsed;
-          // Normalize splitCommission to boolean
           clients.forEach(c=>{
             c.splitCommission=c.splitCommission===true||c.splitCommission==='true'||c.split_commission===true;
           });
-          // Re-save under correct key
           localStorage.setItem('rgclients_v3',JSON.stringify(clients));
+          found=true;
           break;
         }
-      }
+      }catch(e){}
     }
-  }catch(e){console.error('Load error:',e);}
+  }catch(e){}
 }
 function save(){
   clearTimeout(saveTimer);
