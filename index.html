@@ -110,51 +110,60 @@ const TRADE_OPTS=['Roof','Gutters','Siding','Concrete','Deck','Other'];
 const PITCH_OPTS=Object.keys(PITCH_PRICES);
 const GUTTER_OPTS=Object.keys(GUTTER_RATES);
 
-let clients=[],filter='All',saveTimer=null;
+const SB_URL='https://ovdzbhvpktjctucuppxx.supabase.co';
+const SB_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im92ZHpiaHZwa3RqY3R1Y3VwcHh4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE5MDY4NTEsImV4cCI6MjA5NzQ4Mjg1MX0.RxgO870UY7Ia8t04ZJ3PyaohMka9mX4MalDEQKqtcEQ';
 
-function debugData(){
-  const raw=localStorage.getItem('rgclients_v3');
-  if(!raw){alert('No data found in rgclients_v3');return;}
-  const data=JSON.parse(raw);
-  const info=data.map(c=>`${c.name}: splitCommission=${JSON.stringify(c.splitCommission)} (type: ${typeof c.splitCommission})`).join('\n');
-  alert('Stored data:\n'+info);
+let clients=[],filter='All',syncTimer=null;
+
+async function sb(path,opts={}){
+  const r=await fetch(SB_URL+path,{headers:{'apikey':SB_KEY,'Authorization':'Bearer '+SB_KEY,'Content-Type':'application/json','Prefer':'return=representation',...(opts.headers||{})},...opts});
+  if(!r.ok){const e=await r.text();throw new Error(e);}
+  if(r.status===204)return null;
+  return r.json();
 }
 
-function load(){
+function mapRow(r){return{id:r.id,name:r.name||'',trades:Array.isArray(r.trades)&&r.trades.length>0?r.trades:[newTrade()],outOfPocket:r.out_of_pocket||'',insuranceCollected:r.insurance_collected||'',splitCommission:r.split_commission===true,splitWith:r.split_with||'',cocSent:r.coc_sent===true,closed:r.closed===true,notes:r.notes||'',open:false};}
+function toRow(c){return{name:c.name||'',trades:c.trades,out_of_pocket:parseFloat(c.outOfPocket)||null,insurance_collected:parseFloat(c.insuranceCollected)||null,split_commission:c.splitCommission===true,split_with:c.splitWith||null,coc_sent:c.cocSent===true,closed:c.closed===true,notes:c.notes||''};}
+
+async function load(){
   try{
-    // Scan ALL localStorage keys for any client data
-    const allKeys=Object.keys(localStorage);
-    let found=false;
-    // Try known keys first
-    const knownKeys=['rgclients_v3','rgclients_v2','rg_clients_v2','rg_clients'];
-    const tryKeys=[...knownKeys,...allKeys.filter(k=>!knownKeys.includes(k))];
-    for(const k of tryKeys){
-      try{
-        const s=localStorage.getItem(k);
-        if(!s)continue;
-        const parsed=JSON.parse(s);
-        if(Array.isArray(parsed)&&parsed.length>0&&parsed[0].name!==undefined){
-          clients=parsed;
-          clients.forEach(c=>{
-            c.splitCommission=c.splitCommission===true||c.splitCommission==='true'||c.split_commission===true;
-          });
-          localStorage.setItem('rgclients_v3',JSON.stringify(clients));
-          found=true;
-          break;
-        }
-      }catch(e){}
-    }
-  }catch(e){}
+    const data=await sb('/rest/v1/rg_clients?select=*&order=created_at.desc');
+    clients=(data||[]).map(mapRow);
+  }catch(e){
+    document.getElementById('savingLabel').textContent='DB Error: '+e.message.slice(0,50);
+  }
+  renderAll();
 }
-function save(){
-  clearTimeout(saveTimer);
+
+function syncClient(c){
+  clearTimeout(syncTimer);
   document.getElementById('savingLabel').textContent='Saving...';
-  saveTimer=setTimeout(()=>{
-    localStorage.setItem('rgclients_v3',JSON.stringify(clients));
-    document.getElementById('savingLabel').textContent='Saved';
-    setTimeout(()=>document.getElementById('savingLabel').textContent='',1500);
-  },400);
+  syncTimer=setTimeout(async()=>{
+    try{
+      await sb('/rest/v1/rg_clients?id=eq.'+c.id,{method:'PATCH',body:JSON.stringify(toRow(c))});
+      document.getElementById('savingLabel').textContent='Saved';
+      setTimeout(()=>document.getElementById('savingLabel').textContent='',1200);
+    }catch(e){document.getElementById('savingLabel').textContent='Save error: '+e.message.slice(0,30);}
+  },500);
 }
+
+function save(){document.getElementById('savingLabel').textContent='Saving...';}
+
+async function addClient(){
+  try{
+    const data=await sb('/rest/v1/rg_clients',{method:'POST',body:JSON.stringify({name:'',trades:[newTrade()],out_of_pocket:null,insurance_collected:null,split_commission:false,split_with:null,coc_sent:false,closed:false,notes:''})});
+    clients.unshift(mapRow(data[0]));
+    renderAll();
+  }catch(e){alert('Could not add client: '+e.message);}
+}
+
+async function deleteClient(id){
+  if(!confirm('Delete this client?'))return;
+  try{await sb('/rest/v1/rg_clients?id=eq.'+id,{method:'DELETE',headers:{'Prefer':''}});}catch(e){}
+  clients=clients.filter(c=>c.id!==id);
+  renderAll();
+}
+
 
 function fmt(n){return'$'+Math.abs(n||0).toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2});}
 function fmtS(n){return(n<0?'-$':'$')+Math.abs(n||0).toLocaleString('en-US',{maximumFractionDigits:0});}
@@ -179,9 +188,12 @@ function totalContract(client){return client.trades.reduce((s,t)=>s+(parseFloat(
 function newTrade(){return{id:Date.now()+Math.random(),type:'Roof',pitch:'Low Pitch 1 Story',gutterSize:'5"',qty:'',contractPrice:'',opPct:'5',customCost:''};}
 function newClient(){return{id:Date.now().toString(),name:'',trades:[newTrade()],outOfPocket:'',insuranceCollected:'',splitCommission:false,splitWith:'',cocSent:false,closed:false,notes:'',open:true};}
 
-function addClient(){
-  clients.unshift(newClient());
-  save();renderAll();
+async function addClient(){
+  try{
+    const data=await sb('/rest/v1/rg_clients',{method:'POST',body:JSON.stringify({name:'',trades:[newTrade()],out_of_pocket:null,insurance_collected:null,split_commission:false,split_with:null,coc_sent:false,closed:false,notes:''})});
+    clients.unshift(mapRow(data[0]));
+    renderAll();
+  }catch(e){alert('Could not add client: '+e.message);}
 }
 function deleteClient(id){
   if(!confirm('Delete this client?'))return;
@@ -404,7 +416,7 @@ function addTrade(cid){
 function removeTrade(cid,idx){
   const c=getClient(cid);if(!c||c.trades.length<=1)return;
   c.trades.splice(idx,1);
-  save();
+  syncClient(c);
   const el=document.getElementById('cc_'+cid);
   if(el){const tmp=document.createElement('div');tmp.innerHTML=clientHTML(c);el.outerHTML=tmp.firstChild.outerHTML;}
 }
@@ -427,7 +439,7 @@ function renderList(){
 }
 function renderAll(){renderStats();renderList();}
 
-load();renderAll();
+load();
 </script>
 </body>
 </html>
