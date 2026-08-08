@@ -316,7 +316,7 @@ function clientHTML(c){
   if(c.open){
     html+='<div class="card-body open">';
     // Name
-    html+='<div style="margin-top:14px;margin-bottom:14px;"><label class="lbl">Client Name</label><input class="inp" type="text" value="'+escHtml(c.name)+'" placeholder="Client Name" oninput="updateField(\''+c.id+'\',\'name\',this.value)" style="max-width:360px;font-size:15px;font-weight:600;"></div>';
+    html+='<div style="margin-top:14px;margin-bottom:14px;"><label class="lbl">Client Name</label><input class="inp" id="name_'+c.id+'" type="text" value="'+escHtml(c.name)+'" placeholder="Client Name" onblur="updateField(\''+c.id+'\',\'name\',this.value)" onkeydown="if(event.key===\'Enter\')this.blur()" style="max-width:360px;font-size:15px;font-weight:600;"></div>';
     // Trades
     html+='<div class="sec-div">Trades</div>';
     c.trades.forEach((t,idx)=>{html+=tradeHTML(c.id,t,idx,c.trades.length>1);});
@@ -358,13 +358,13 @@ function clientHTML(c){
     if(c.splitCommission&&tComm>0){html+='<div style="margin-left:auto;text-align:right;"><div style="font-size:9px;color:var(--dim);text-transform:uppercase;letter-spacing:1px;">Your Share</div><div style="font-family:var(--font-d);font-size:22px;font-weight:800;color:var(--green);">'+fmt(tComm*0.5)+'</div></div>';}
     html+='</label>';
     if(c.splitCommission){
-      html+='<input class="inp" type="text" value="'+escHtml(c.splitWith||'')+'" placeholder="Other rep\'s name" oninput="updateField(\''+c.id+'\',\'splitWith\',this.value)" style="max-width:280px;">';
+      html+='<input class="inp" type="text" value="'+escHtml(c.splitWith||'')+'" placeholder="Other rep\'s name" onblur="updateField(\''+c.id+'\',\'splitWith\',this.value)" style="max-width:280px;">';
     }
     html+='</div>';
 
     // Notes
     html+='<div class="sec-div">Notes</div>';
-    html+='<textarea class="inp" rows="3" placeholder="Follow-up notes, next steps..." oninput="updateField(\''+c.id+'\',\'notes\',this.value)" style="resize:vertical;width:100%;line-height:1.6;margin-bottom:14px;">'+escHtml(c.notes||'')+'</textarea>';
+    html+='<textarea class="inp" rows="3" placeholder="Follow-up notes, next steps..." onblur="updateField(\''+c.id+'\',\'notes\',this.value)" style="resize:vertical;width:100%;line-height:1.6;margin-bottom:14px;">'+escHtml(c.notes||'')+'</textarea>';
 
     // Checkboxes + delete
     html+='<div class="check-row">';
