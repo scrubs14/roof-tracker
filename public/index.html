@@ -112,7 +112,26 @@ const GUTTER_OPTS=Object.keys(GUTTER_RATES);
 let clients=[],filter='All',saveTimer=null;
 
 function load(){
-  try{const s=localStorage.getItem('rgclients_v3');if(s)clients=JSON.parse(s);}catch(e){}
+  try{
+    // Try all possible storage keys
+    const keys=['rgclients_v3','rgclients_v2','rg_clients_v2','rg_clients'];
+    for(const k of keys){
+      const s=localStorage.getItem(k);
+      if(s){
+        const parsed=JSON.parse(s);
+        if(parsed&&parsed.length>0){
+          clients=parsed;
+          // Normalize splitCommission to boolean
+          clients.forEach(c=>{
+            c.splitCommission=c.splitCommission===true||c.splitCommission==='true'||c.split_commission===true;
+          });
+          // Re-save under correct key
+          localStorage.setItem('rgclients_v3',JSON.stringify(clients));
+          break;
+        }
+      }
+    }
+  }catch(e){console.error('Load error:',e);}
 }
 function save(){
   clearTimeout(saveTimer);
