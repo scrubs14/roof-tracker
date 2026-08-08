@@ -84,6 +84,7 @@ main{max-width:900px;margin:0 auto;padding:24px 16px;}
 <header>
   <div class="brand">Roof <em>Guys</em> <span style="font-size:13px;color:var(--dim);font-family:var(--font-b);font-weight:400;letter-spacing:0;text-transform:none;">Client Tracker</span></div>
   <div style="display:flex;gap:10px;align-items:center;">
+    <button onclick="debugData()" style="background:none;border:1px solid var(--border);border-radius:6px;color:var(--dim);font-size:11px;padding:5px 10px;cursor:pointer;">Debug</button>
     <span class="saving" id="savingLabel"></span>
     <button class="add-btn" onclick="addClient()">+ Add Client</button>
   </div>
@@ -110,6 +111,14 @@ const PITCH_OPTS=Object.keys(PITCH_PRICES);
 const GUTTER_OPTS=Object.keys(GUTTER_RATES);
 
 let clients=[],filter='All',saveTimer=null;
+
+function debugData(){
+  const raw=localStorage.getItem('rgclients_v3');
+  if(!raw){alert('No data found in rgclients_v3');return;}
+  const data=JSON.parse(raw);
+  const info=data.map(c=>`${c.name}: splitCommission=${JSON.stringify(c.splitCommission)} (type: ${typeof c.splitCommission})`).join('\n');
+  alert('Stored data:\n'+info);
+}
 
 function load(){
   try{
