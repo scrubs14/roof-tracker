@@ -179,24 +179,12 @@ function totalContract(client){return client.trades.reduce((s,t)=>s+(parseFloat(
 function newTrade(){return{id:Date.now()+Math.random(),type:'Roof',pitch:'Low Pitch 1 Story',gutterSize:'5"',qty:'',contractPrice:'',opPct:'5',customCost:''};}
 function newClient(){return{id:Date.now().toString(),name:'',trades:[newTrade()],outOfPocket:'',insuranceCollected:'',splitCommission:false,splitWith:'',cocSent:false,closed:false,notes:'',open:true};}
 
-async function addClient(){
-  const c=newClient();
-  try{
-    const data=await sbFetch('/rest/v1/rg_clients',{
-      method:'POST',
-      body:JSON.stringify({name:'',trades:c.trades,out_of_pocket:null,insurance_collected:null,split_commission:false,split_with:null,coc_sent:false,closed:false,notes:''})
-    });
-    c.id=data[0].id;
-    clients.unshift(c);
-  }catch(e){
-    c.id=Date.now().toString();
-    clients.unshift(c);
-  }
+function addClient(){
+  clients.unshift(newClient());
   save();renderAll();
 }
-async function deleteClient(id){
+function deleteClient(id){
   if(!confirm('Delete this client?'))return;
-  try{await sbFetch('/rest/v1/rg_clients?id=eq.'+id,{method:'DELETE'});}catch(e){}
   clients=clients.filter(c=>c.id!==id);
   save();renderAll();
 }
@@ -390,25 +378,26 @@ function toggleCard(id){
 }
 function updateField(id,field,val){
   const c=getClient(id);if(!c)return;
+  // Ensure booleans are stored as actual booleans
   if(field==='splitCommission'||field==='cocSent'||field==='closed')val=val===true||val==='true';
   c[field]=val;
   save();
-  syncClient(c);
   renderStats();
+  // Re-render just this card
   const el=document.getElementById('cc_'+id);
   if(el){const tmp=document.createElement('div');tmp.innerHTML=clientHTML(c);el.outerHTML=tmp.firstChild.outerHTML;}
 }
 function updateTrade(cid,idx,field,val){
   const c=getClient(cid);if(!c)return;
   c.trades[idx][field]=val;
-  save();syncClient(c);renderStats();
+  save();renderStats();
   const el=document.getElementById('cc_'+cid);
   if(el){const tmp=document.createElement('div');tmp.innerHTML=clientHTML(c);el.outerHTML=tmp.firstChild.outerHTML;}
 }
 function addTrade(cid){
   const c=getClient(cid);if(!c)return;
   c.trades.push(newTrade());
-  save();syncClient(c);
+  save();
   const el=document.getElementById('cc_'+cid);
   if(el){const tmp=document.createElement('div');tmp.innerHTML=clientHTML(c);el.outerHTML=tmp.firstChild.outerHTML;}
 }
@@ -438,7 +427,7 @@ function renderList(){
 }
 function renderAll(){renderStats();renderList();}
 
-load();
+load();renderAll();
 </script>
 </body>
 </html>
