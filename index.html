@@ -221,6 +221,16 @@ function renderStats(){
   const sComm=splits.reduce((s,c)=>s+totalCommission(c),0);
   const sYours=sComm*0.5;
   let html='';
+  const allYours=fComm+sYours;
+  const allContract=fContract+sContract;
+  const overallPct=allContract>0?((allYours/allContract)*100).toFixed(1)+'%':'—';
+  html+='<div class="stat-section-label">Overall</div>';
+  html+='<div class="stats-grid" style="margin-bottom:16px;">';
+  html+=statCard('Total Contract',fmtS(allContract),'var(--white)');
+  html+=statCard('Total You Take Home',fmtS(allYours),'var(--green)');
+  html+='<div class="stat-card"><div class="stat-label">Commission % of Revenue</div><div class="stat-val" style="color:'+(parseFloat(overallPct)>=20?'var(--green)':parseFloat(overallPct)>=12?'var(--gold)':'var(--red)')+'">'+overallPct+'</div></div>';
+  html+=statCard('Total Clients',clients.length,'var(--white)');
+  html+='</div>';
   html+='<div class="stat-section-label">Full Deals</div>';
   html+='<div class="stats-grid">';
   html+=statCard('Total Contract',fmtS(fContract),'var(--white)');
