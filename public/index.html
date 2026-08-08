@@ -186,9 +186,10 @@ function setFilter(f){
 
 // ── STATS ─────────────────────────────────────────────────────────
 function renderStats(){
-  const isSplit=c=>c.splitCommission===true||c.splitCommission==='true';
+  const isSplit=c=>c.splitCommission===true||c.splitCommission==='true'||c.splitCommission===1;
   const full=clients.filter(c=>!isSplit(c));
   const splits=clients.filter(c=>isSplit(c));
+  console.log('Split clients:',splits.map(c=>c.name),'Full clients:',full.map(c=>c.name));
   const fContract=full.reduce((s,c)=>s+totalContract(c),0);
   const fComm=full.reduce((s,c)=>s+totalCommission(c),0);
   const sContract=splits.reduce((s,c)=>s+totalContract(c),0);
@@ -364,6 +365,8 @@ function toggleCard(id){
 }
 function updateField(id,field,val){
   const c=getClient(id);if(!c)return;
+  // Ensure booleans are stored as actual booleans
+  if(field==='splitCommission'||field==='cocSent'||field==='closed')val=val===true||val==='true';
   c[field]=val;
   save();
   renderStats();
