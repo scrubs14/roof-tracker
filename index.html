@@ -96,12 +96,13 @@ function fS(n){return'$'+Number(n||0).toLocaleString('en-US',{maximumFractionDig
 function hs(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
 function hStat(msg,c){const e=document.getElementById('hs');e.textContent=msg;e.style.color=c||'var(--dim)';setTimeout(()=>e.textContent='',3000);}
 
-function calcP(sq,sh,lead,total){
+function calcP(sq,sh,lead,total,split){
   sq=parseFloat(sq)||0;if(!sq)return 0;
   const build=sq*(sh==='Metal'?MBUILD:ABUILD);
   const contract=parseFloat(total)||sq*(sh==='Metal'?METAL:ARCH);
   const op=lead==='Self-Gen'?0.05:0.15;
-  return(contract-build-contract*op)*0.5;
+  const payout=(contract-build-contract*op)*0.5;
+  return(split==='true'||split===true)?payout*0.5:payout;
 }
 
 async function apiCall(action,data){
@@ -120,11 +121,11 @@ async function load(){
 
 function renderStats(){
   const tC=clients.reduce((s,c)=>s+(parseFloat(c['Actual Total'])||0),0);
-  const actualPayoutTotal=clients.reduce((s,c)=>s+(parseFloat(c['Actual Payout'])||0),0);
+  const actualPayoutTotal=clients.reduce((s,c)=>s+(parseFloat(c['Actual Payout'])||0)*(c['Split Deal']==='true'||c['Split Deal']===true?0.5:1),0);
   const estOnlyClients=clients.filter(c=>!parseFloat(c['Actual Payout']));
-  const estP=estOnlyClients.reduce((s,c)=>s+calcP(c['Squares'],c['Shingle Type'],c['Lead Source'],c['Actual Total']),0);
+  const estP=estOnlyClients.reduce((s,c)=>s+calcP(c['Squares'],c['Shingle Type'],c['Lead Source'],c['Actual Total'],c['Split Deal']),0);
   const allP=actualPayoutTotal+estP;
-  const remainP=clients.filter(c=>c['Phase']!=='Closed'&&!parseFloat(c['Actual Payout']).valueOf()).reduce((s,c)=>s+calcP(c['Squares'],c['Shingle Type'],c['Lead Source'],c['Actual Total']),0);
+  const remainP=clients.filter(c=>c['Phase']!=='Closed'&&!parseFloat(c['Actual Payout'])).reduce((s,c)=>s+calcP(c['Squares'],c['Shingle Type'],c['Lead Source'],c['Actual Total'],c['Split Deal']),0);
   const approved=clients.filter(c=>(c['Phase']||'').trim()==='Approved').length;
   const denied=clients.filter(c=>(c['Phase']||'').trim()==='Denied').length;
   const pct=tC>0?((allP/tC)*100).toFixed(1)+'%':'—';
@@ -157,7 +158,7 @@ function renderList(){
   }
   document.getElementById('list').innerHTML=filtered.map(c=>{
     const id=c['ID'],ph=c['Phase']||'Lead',phC=PC[ph]||'#555';
-    const payout=calcP(c['Squares'],c['Shingle Type'],c['Lead Source'],c['Actual Total']);
+    const payout=calcP(c['Squares'],c['Shingle Type'],c['Lead Source'],c['Actual Total'],c['Split Deal']);
     const contract=parseFloat(c['Actual Total'])||0;
     const dot=ph==='Closed'?'var(--green)':ph==='Denied'?'var(--red)':ph==='Approved'?'var(--green)':'var(--gold)';
     return '<div class="cc'+( ph==='Closed'?' closed':ph==='Denied'?' denied':'')+'" id="cc_'+id+'">'+
@@ -165,6 +166,7 @@ function renderList(){
       '<div style="flex:1;min-width:0"><div class="cname">'+hs(c['Name']||'No Name')+'</div>'+
       '<div class="cmeta">'+hs(c['Trades']||'')+( c['Carrier']?' · '+hs(c['Carrier']):'')+(contract>0?' · '+fmt(contract):'')+'</div></div>'+
       '<div class="cright"><span class="pbadge" style="background:'+phC+'22;color:'+phC+'">'+ph+'</span>'+
+      (c['Split Deal']==='true'?'<span style="font-size:9px;font-weight:700;padding:2px 7px;border-radius:8px;background:rgba(74,142,194,0.15);color:var(--blue)">SPLIT</span>':'')+
       (c['Actual Payout']&&parseFloat(c['Actual Payout'])>0?
         '<span style="font-family:var(--font-d);font-size:16px;font-weight:800;color:var(--green)">'+fmt(parseFloat(c['Actual Payout']))+'</span>':
         payout>0?'<span style="font-family:var(--font-d);font-size:16px;font-weight:800;color:var(--gold)">'+fmt(payout)+'</span>':'')+
@@ -196,6 +198,13 @@ function openNew(){eid=null;sT=[];sP='Lead';buildModal({});}
 function openEdit(id){const c=clients.find(x=>x['ID']===id);if(!c)return;eid=id;sT=(c['Trades']||'').split(',').map(t=>t.trim()).filter(Boolean);sP=c['Phase']||'Lead';buildModal(c);}
 function closeModal(){document.getElementById('modal').style.display='none';eid=null;}
 
+function togSplit(){
+  const cb=document.getElementById('mSplit');
+  const inp=document.getElementById('mSplitWith');
+  if(inp)inp.style.display=cb.checked?'block':'none';
+  upP();
+}
+
 function buildModal(c){
   const isE=!!eid;
   document.getElementById('modal').style.display='block';
@@ -223,7 +232,13 @@ function buildModal(c){
     '<input class="inp" id="mTot" type="number" value="'+( c['Actual Total']||'')+'" placeholder="0.00" style="padding-left:22px" oninput="upP()"></div></div>'+
     '<div class="fg"><label class="lbl">Actual Payout ($)</label><div style="position:relative"><span style="position:absolute;left:10px;top:50%;transform:translateY(-50%);color:var(--dim)">$</span>'+
     '<input class="inp" id="mAP" type="number" value="'+( c['Actual Payout']||'')+'" placeholder="0.00" style="padding-left:22px"></div>'+
-    '<div style="font-size:10px;color:var(--dim);margin-top:3px">Enter when paid — replaces estimated payout</div></div></div>'+
+    '<div style="font-size:10px;color:var(--dim);margin-top:3px">Enter when paid — replaces estimated payout</div></div>'+
+    '<div class="fg"><label class="lbl">Split Deal</label>'+
+    '<div style="display:flex;align-items:center;gap:10px;margin-top:4px;">'+
+    '<input type="checkbox" id="mSplit" '+( c['Split Deal']==="true"||c['Split Deal']===true?' checked':'')+' onchange="togSplit()" style="width:16px;height:16px;accent-color:var(--gold);cursor:pointer;">'+
+    '<span style="font-size:13px;color:var(--text)">Split with another rep (halves your payout)</span></div>'+
+    '<input class="inp" id="mSplitWith" value="'+hs(c['Split With']||'')+'" placeholder="Other rep name" style="margin-top:6px;display:'+( c['Split Deal']==="true"||c['Split Deal']===true?'block':'none')+'" id="mSplitWith">'+
+    '</div></div>'+
     '<div id="pbox"></div>'+
     '<div class="lbl" style="margin-bottom:8px">Phase</div>'+
     '<div class="prow">'+PHASES.map(p=>'<button class="pbtn'+( sP===p?' on':'')+'" onclick="pickP(\''+p+'\',this)">'+p+'</button>').join('')+'</div>'+
@@ -265,7 +280,8 @@ function upP(){
   if(hint&&sq>0){hint.textContent=sq+' sq × $'+(sh==='Metal'?METAL:ARCH)+'/sq = '+fmt(sq*(sh==='Metal'?METAL:ARCH))+' suggested';}
   const pb=document.getElementById('pbox');if(!pb)return;
   if(sq>0&&sT.includes('Roof')){
-    const p=calcP(sq,sh,lead,tot);
+    const splitOn=(document.getElementById('mSplit')||{}).checked;
+    const p=calcP(sq,sh,lead,tot,splitOn?'true':'');
     const contract=tot>0?tot:sq*(sh==='Metal'?METAL:ARCH);
     const build=sq*(sh==='Metal'?MBUILD:ABUILD);
     const pct=contract>0?(p/contract*100):0;
@@ -289,6 +305,8 @@ function gF(){
     actualTotal:(document.getElementById('mTot')||{}).value||'',
     leadSource:(document.getElementById('mL')||{}).value||'Company Lead',
     actualPayout:(document.getElementById('mAP')||{}).value||'',
+    splitDeal:(document.getElementById('mSplit')||{}).checked?'true':'',
+    splitWith:(document.getElementById('mSplitWith')||{}).value||'',
     phase:sP,
     notes:(document.getElementById('mNo')||{}).value||''
   };
@@ -306,10 +324,10 @@ async function saveC(){
       data.id=eid;
       const r=await apiCall('update',data);if(r.error)throw new Error(r.error);
       const idx=clients.findIndex(c=>c['ID']===eid);
-      if(idx>=0)clients[idx]={'ID':eid,'Name':f.name,'Phone':f.phone,'Address':f.address,'Carrier':f.carrier,'Insurance Status':f.insuranceStatus,'Trades':f.trades,'Shingle Type':f.shingleType,'Squares':f.squares,'Actual Total':f.actualTotal,'Lead Source':f.leadSource,'Est Payout':data.estimatedPayout,'Actual Payout':f.actualPayout,'Phase':f.phase,'Notes':f.notes};
+      if(idx>=0)clients[idx]={'ID':eid,'Name':f.name,'Phone':f.phone,'Address':f.address,'Carrier':f.carrier,'Insurance Status':f.insuranceStatus,'Trades':f.trades,'Shingle Type':f.shingleType,'Squares':f.squares,'Actual Total':f.actualTotal,'Lead Source':f.leadSource,'Est Payout':data.estimatedPayout,'Actual Payout':f.actualPayout,'Split Deal':f.splitDeal,'Split With':f.splitWith,'Phase':f.phase,'Notes':f.notes};
     }else{
       const r=await apiCall('add',data);if(r.error)throw new Error(r.error);
-      clients.unshift({'ID':r.id,'Name':f.name,'Phone':f.phone,'Address':f.address,'Carrier':f.carrier,'Insurance Status':f.insuranceStatus,'Trades':f.trades,'Shingle Type':f.shingleType,'Squares':f.squares,'Actual Total':f.actualTotal,'Lead Source':f.leadSource,'Est Payout':data.estimatedPayout,'Actual Payout':f.actualPayout,'Phase':f.phase,'Notes':f.notes});
+      clients.unshift({'ID':r.id,'Name':f.name,'Phone':f.phone,'Address':f.address,'Carrier':f.carrier,'Insurance Status':f.insuranceStatus,'Trades':f.trades,'Shingle Type':f.shingleType,'Squares':f.squares,'Actual Total':f.actualTotal,'Lead Source':f.leadSource,'Est Payout':data.estimatedPayout,'Actual Payout':f.actualPayout,'Split Deal':f.splitDeal,'Split With':f.splitWith,'Phase':f.phase,'Notes':f.notes});
     }
     closeModal();renderAll();hStat('Saved ✓','var(--green)');
   }catch(e){alert('Save failed: '+e.message);btn.disabled=false;btn.textContent='Save';}
