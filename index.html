@@ -123,8 +123,8 @@ function renderStats(){
   const allP=clients.reduce((s,c)=>s+calcP(c['Squares'],c['Shingle Type'],c['Lead Source'],c['Actual Total']),0);
   const closedP=clients.filter(c=>c['Phase']==='Closed').reduce((s,c)=>s+calcP(c['Squares'],c['Shingle Type'],c['Lead Source'],c['Actual Total']),0);
   const remainP=allP-closedP;
-  const approved=clients.filter(c=>c['Phase']==='Approved').length;
-  const denied=clients.filter(c=>c['Phase']==='Denied').length;
+  const approved=clients.filter(c=>(c['Phase']||'').trim()==='Approved').length;
+  const denied=clients.filter(c=>(c['Phase']||'').trim()==='Denied').length;
   const pct=tC>0?((allP/tC)*100).toFixed(1)+'%':'—';
   const col=parseFloat(pct)>=20?'var(--green)':parseFloat(pct)>=12?'var(--gold)':'var(--red)';
   document.getElementById('stats').innerHTML=
