@@ -120,9 +120,11 @@ async function load(){
 
 function renderStats(){
   const tC=clients.reduce((s,c)=>s+(parseFloat(c['Actual Total'])||0),0);
-  const allP=clients.reduce((s,c)=>s+calcP(c['Squares'],c['Shingle Type'],c['Lead Source'],c['Actual Total']),0);
-  const closedP=clients.filter(c=>c['Phase']==='Closed').reduce((s,c)=>s+calcP(c['Squares'],c['Shingle Type'],c['Lead Source'],c['Actual Total']),0);
-  const remainP=allP-closedP;
+  const actualPayoutTotal=clients.reduce((s,c)=>s+(parseFloat(c['Actual Payout'])||0),0);
+  const estOnlyClients=clients.filter(c=>!parseFloat(c['Actual Payout']));
+  const estP=estOnlyClients.reduce((s,c)=>s+calcP(c['Squares'],c['Shingle Type'],c['Lead Source'],c['Actual Total']),0);
+  const allP=actualPayoutTotal+estP;
+  const remainP=clients.filter(c=>c['Phase']!=='Closed'&&!parseFloat(c['Actual Payout']).valueOf()).reduce((s,c)=>s+calcP(c['Squares'],c['Shingle Type'],c['Lead Source'],c['Actual Total']),0);
   const approved=clients.filter(c=>(c['Phase']||'').trim()==='Approved').length;
   const denied=clients.filter(c=>(c['Phase']||'').trim()==='Denied').length;
   const pct=tC>0?((allP/tC)*100).toFixed(1)+'%':'—';
@@ -131,8 +133,9 @@ function renderStats(){
     st('Total Contract',fS(tC),'var(--white)')+
     st('Approved',approved,'var(--green)')+
     st('Denied',denied,'var(--red)')+
-    st('Total Est. Payout',fS(allP),'var(--green)')+
-    st('Remaining Payout',fS(remainP),'var(--gold)')+
+    st('Actual Payout',fS(actualPayoutTotal),'var(--green)')+
+    st('Est. Payout',fS(estP),'var(--dim)')+
+    st('Remaining',fS(remainP),'var(--gold)')+
     st('Revenue %',pct,col);
 }
 function st(l,v,c){return'<div class="stat"><div class="sl">'+l+'</div><div class="sv" style="color:'+c+'">'+v+'</div></div>';}
@@ -162,7 +165,9 @@ function renderList(){
       '<div style="flex:1;min-width:0"><div class="cname">'+hs(c['Name']||'No Name')+'</div>'+
       '<div class="cmeta">'+hs(c['Trades']||'')+( c['Carrier']?' · '+hs(c['Carrier']):'')+(contract>0?' · '+fmt(contract):'')+'</div></div>'+
       '<div class="cright"><span class="pbadge" style="background:'+phC+'22;color:'+phC+'">'+ph+'</span>'+
-      (payout>0?'<span style="font-family:var(--font-d);font-size:16px;font-weight:800;color:var(--green)">'+fmt(payout)+'</span>':'')+
+      (c['Actual Payout']&&parseFloat(c['Actual Payout'])>0?
+        '<span style="font-family:var(--font-d);font-size:16px;font-weight:800;color:var(--green)">'+fmt(parseFloat(c['Actual Payout']))+'</span>':
+        payout>0?'<span style="font-family:var(--font-d);font-size:16px;font-weight:800;color:var(--gold)">'+fmt(payout)+'</span>':'')+
       '<span class="chev" id="chev_'+id+'">▼</span></div></div>'+
       '<div class="cbody" id="cb_'+id+'">'+
       '<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:12px;margin-bottom:12px;">'+
@@ -173,7 +178,9 @@ function renderList(){
       (c['Shingle Type']?'<div><div class="lbl">Shingle</div><div style="color:var(--text);font-size:13px;">'+hs(c['Shingle Type'])+'</div></div>':'')+
       (c['Squares']?'<div><div class="lbl">Squares</div><div style="font-family:var(--font-d);font-size:22px;font-weight:800;color:var(--white)">'+c['Squares']+' sq</div></div>':'')+
       (contract>0?'<div><div class="lbl">Actual Total</div><div style="font-family:var(--font-d);font-size:22px;font-weight:800;color:var(--white)">'+fmt(contract)+'</div></div>':'')+
-      (payout>0?'<div><div class="lbl">Est. Payout</div><div style="font-family:var(--font-d);font-size:22px;font-weight:800;color:var(--green)">'+fmt(payout)+'</div></div>':'')+
+      (c['Actual Payout']&&parseFloat(c['Actual Payout'])>0?
+        '<div><div class="lbl">Actual Payout</div><div style="font-family:var(--font-d);font-size:22px;font-weight:800;color:var(--green)">'+fmt(parseFloat(c['Actual Payout']))+'</div></div>':
+        payout>0?'<div><div class="lbl">Est. Payout</div><div style="font-family:var(--font-d);font-size:22px;font-weight:800;color:var(--gold)">'+fmt(payout)+'</div></div>':'')+
       (c['Insurance Status']?'<div><div class="lbl">Ins. Status</div><div style="font-size:13px;font-weight:600;color:'+( c['Insurance Status']==="Approved"?"var(--green)":c['Insurance Status']==="Denied"?"var(--red)":"var(--text)")+'">'+hs(c['Insurance Status'])+'</div></div>':'')+
       '</div>'+
       (c['Notes']?'<div style="background:var(--surface);border-radius:8px;padding:10px 12px;font-size:12px;color:var(--dim);margin-bottom:12px;">'+hs(c['Notes'])+'</div>':'')+
@@ -213,7 +220,10 @@ function buildModal(c){
     '<div class="fg"><label class="lbl">Lead Source</label><select class="sel" id="mL" onchange="upP()">'+
     ['Company Lead','Self-Gen'].map(l=>'<option'+( lead===l?' selected':'')+'>'+l+'</option>').join('')+'</select></div>'+
     '<div class="fg"><label class="lbl">Actual Total ($)</label><div style="position:relative"><span style="position:absolute;left:10px;top:50%;transform:translateY(-50%);color:var(--dim)">$</span>'+
-    '<input class="inp" id="mTot" type="number" value="'+( c['Actual Total']||'')+'" placeholder="0.00" style="padding-left:22px" oninput="upP()"></div></div></div>'+
+    '<input class="inp" id="mTot" type="number" value="'+( c['Actual Total']||'')+'" placeholder="0.00" style="padding-left:22px" oninput="upP()"></div></div>'+
+    '<div class="fg"><label class="lbl">Actual Payout ($)</label><div style="position:relative"><span style="position:absolute;left:10px;top:50%;transform:translateY(-50%);color:var(--dim)">$</span>'+
+    '<input class="inp" id="mAP" type="number" value="'+( c['Actual Payout']||'')+'" placeholder="0.00" style="padding-left:22px"></div>'+
+    '<div style="font-size:10px;color:var(--dim);margin-top:3px">Enter when paid — replaces estimated payout</div></div></div>'+
     '<div id="pbox"></div>'+
     '<div class="lbl" style="margin-bottom:8px">Phase</div>'+
     '<div class="prow">'+PHASES.map(p=>'<button class="pbtn'+( sP===p?' on':'')+'" onclick="pickP(\''+p+'\',this)">'+p+'</button>').join('')+'</div>'+
@@ -278,6 +288,7 @@ function gF(){
     squares:(document.getElementById('mSq')||{}).value||'',
     actualTotal:(document.getElementById('mTot')||{}).value||'',
     leadSource:(document.getElementById('mL')||{}).value||'Company Lead',
+    actualPayout:(document.getElementById('mAP')||{}).value||'',
     phase:sP,
     notes:(document.getElementById('mNo')||{}).value||''
   };
@@ -295,10 +306,10 @@ async function saveC(){
       data.id=eid;
       const r=await apiCall('update',data);if(r.error)throw new Error(r.error);
       const idx=clients.findIndex(c=>c['ID']===eid);
-      if(idx>=0)clients[idx]={'ID':eid,'Name':f.name,'Phone':f.phone,'Address':f.address,'Carrier':f.carrier,'Insurance Status':f.insuranceStatus,'Trades':f.trades,'Shingle Type':f.shingleType,'Squares':f.squares,'Actual Total':f.actualTotal,'Lead Source':f.leadSource,'Est Payout':data.estimatedPayout,'Phase':f.phase,'Notes':f.notes};
+      if(idx>=0)clients[idx]={'ID':eid,'Name':f.name,'Phone':f.phone,'Address':f.address,'Carrier':f.carrier,'Insurance Status':f.insuranceStatus,'Trades':f.trades,'Shingle Type':f.shingleType,'Squares':f.squares,'Actual Total':f.actualTotal,'Lead Source':f.leadSource,'Est Payout':data.estimatedPayout,'Actual Payout':f.actualPayout,'Phase':f.phase,'Notes':f.notes};
     }else{
       const r=await apiCall('add',data);if(r.error)throw new Error(r.error);
-      clients.unshift({'ID':r.id,'Name':f.name,'Phone':f.phone,'Address':f.address,'Carrier':f.carrier,'Insurance Status':f.insuranceStatus,'Trades':f.trades,'Shingle Type':f.shingleType,'Squares':f.squares,'Actual Total':f.actualTotal,'Lead Source':f.leadSource,'Est Payout':data.estimatedPayout,'Phase':f.phase,'Notes':f.notes});
+      clients.unshift({'ID':r.id,'Name':f.name,'Phone':f.phone,'Address':f.address,'Carrier':f.carrier,'Insurance Status':f.insuranceStatus,'Trades':f.trades,'Shingle Type':f.shingleType,'Squares':f.squares,'Actual Total':f.actualTotal,'Lead Source':f.leadSource,'Est Payout':data.estimatedPayout,'Actual Payout':f.actualPayout,'Phase':f.phase,'Notes':f.notes});
     }
     closeModal();renderAll();hStat('Saved ✓','var(--green)');
   }catch(e){alert('Save failed: '+e.message);btn.disabled=false;btn.textContent='Save';}
