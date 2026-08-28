@@ -120,15 +120,20 @@ async function load(){
 
 function renderStats(){
   const tC=clients.reduce((s,c)=>s+(parseFloat(c['Actual Total'])||0),0);
-  const tP=clients.reduce((s,c)=>s+calcP(c['Squares'],c['Shingle Type'],c['Lead Source'],c['Actual Total']),0);
-  const pct=tC>0?((tP/tC)*100).toFixed(1)+'%':'—';
+  const allP=clients.reduce((s,c)=>s+calcP(c['Squares'],c['Shingle Type'],c['Lead Source'],c['Actual Total']),0);
+  const closedP=clients.filter(c=>c['Phase']==='Closed').reduce((s,c)=>s+calcP(c['Squares'],c['Shingle Type'],c['Lead Source'],c['Actual Total']),0);
+  const remainP=allP-closedP;
+  const approved=clients.filter(c=>c['Phase']==='Approved').length;
+  const denied=clients.filter(c=>c['Phase']==='Denied').length;
+  const pct=tC>0?((allP/tC)*100).toFixed(1)+'%':'—';
   const col=parseFloat(pct)>=20?'var(--green)':parseFloat(pct)>=12?'var(--gold)':'var(--red)';
   document.getElementById('stats').innerHTML=
-    st('Clients',clients.length,'var(--white)')+
-    st('Approved',clients.filter(c=>['Approved','Closed'].includes(c['Phase'])).length,'var(--green)')+
     st('Total Contract',fS(tC),'var(--white)')+
-    st('Est. Payout',fS(tP),'var(--green)')+
-    st('Payout %',pct,col);
+    st('Approved',approved,'var(--green)')+
+    st('Denied',denied,'var(--red)')+
+    st('Total Est. Payout',fS(allP),'var(--green)')+
+    st('Remaining Payout',fS(remainP),'var(--gold)')+
+    st('Revenue %',pct,col);
 }
 function st(l,v,c){return'<div class="stat"><div class="sl">'+l+'</div><div class="sv" style="color:'+c+'">'+v+'</div></div>';}
 
