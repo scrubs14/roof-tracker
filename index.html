@@ -152,20 +152,36 @@ async function load(){
   document.getElementById('list').innerHTML='<div class="empty">Loading...</div>';
   try{
     const r=await apiCall('getAll',{});
-    clients=(r.clients||[]).map(c=>{
+    if(r.error){throw new Error(r.error);}
+    const raw=r.clients||[];
+    if(raw.length===0){
+      clients=[];
+      renderAll();
+      return;
+    }
+    // Normalize all field keys - trim whitespace, handle any column structure
+    clients=raw.map(c=>{
       const out={};
       Object.keys(c).forEach(k=>{
         const val=c[k];
-        out[k.trim()]=typeof val==='string'?val.trim():String(val===null||val===undefined?'':val);
+        const clean=typeof val==='string'?val.trim():String(val===null||val===undefined?'':val);
+        out[k.trim()]=clean;
       });
-      // Ensure Trades is always a valid JSON string
-      if(!out['Trades']||out['Trades']===''||out['Trades']==='0'){out['Trades']='[]';}
+      // Generate ID if missing
+      if(!out['ID']||out['ID']==='')out['ID']=Math.random().toString(36).substr(2,9);
+      // Ensure Trades is valid
+      if(!out['Trades']||out['Trades']===''||out['Trades']==='0')out['Trades']='[]';
+      // Ensure Phase has a value
+      if(!out['Phase'])out['Phase']='Lead';
       return out;
     });
     renderAll();
   }catch(e){
-    console.error('Load error:',e);
-    document.getElementById('list').innerHTML='<div class="empty"><div style="color:var(--red);margin-bottom:8px;">Error loading: '+e.message+'</div><button onclick="load()" style="background:var(--gold);border:none;color:#000;padding:8px 20px;border-radius:7px;cursor:pointer;font-family:var(--font-d);font-size:14px;font-weight:800;text-transform:uppercase;">Retry</button></div>';
+    document.getElementById('list').innerHTML=
+      '<div class="empty">'
+      +'<div style="color:var(--red);margin-bottom:12px;font-size:13px;">'+e.message+'</div>'
+      +'<button onclick="load()" style="background:var(--gold);border:none;color:#000;padding:8px 20px;border-radius:7px;cursor:pointer;font-family:var(--font-d);font-size:14px;font-weight:800;text-transform:uppercase;margin-right:10px;">Retry</button>'
+      +'</div>';
   }
 }
 
