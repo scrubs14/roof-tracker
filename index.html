@@ -401,7 +401,7 @@ function tradeBlockHTML(t,idx){
   return '<div class="trade-block" id="tb_'+t.id+'">'
     +'<div class="trade-block-header">'
     +'<span class="trade-type-label">'+hs(t.type||'Trade')+'</span>'
-    +(tc.payout>0?'<span class="trade-payout'+(t.split==="true"?' est":">")+'">'+fmt(tc.payout)+(t.split==="true"?' (your split)':'')+'</span>':'<span></span>')
+    +(tc.payout>0?'<span class="trade-payout'+(t.split==="true"?' est':'')+'">'+(t.split==="true"?'Your split: ':'')+fmt(tc.payout)+'</span>':'<span></span>')
     +'<button class="rm-trade" onclick="removeTrade('+t.id+')">Remove</button>'
     +'</div>'
     +'<div class="fg2">'
