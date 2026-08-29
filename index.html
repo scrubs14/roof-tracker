@@ -144,8 +144,16 @@ function parseTrades(raw){
 }
 
 async function apiCall(action,data){
-  const r=await fetch(API,{method:'POST',body:JSON.stringify({action,...data})});
-  return r.json();
+  const url=action==='getAll'
+    ? API+'?action=getAll'
+    : API;
+  const opts=action==='getAll'
+    ? {method:'GET'}
+    : {method:'POST',body:JSON.stringify({action,...data}),headers:{'Content-Type':'text/plain'}};
+  const r=await fetch(url,opts);
+  const text=await r.text();
+  try{return JSON.parse(text);}
+  catch(e){throw new Error('Bad response: '+text.slice(0,100));}
 }
 
 async function load(){
