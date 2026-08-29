@@ -174,6 +174,8 @@ function renderStats(){
   const allContract=clients.reduce((s,c)=>s+clientTotals(c).contract,0);
   const pct=allContract>0?((allPayout/allContract)*100).toFixed(1)+'%':'—';
   const col=parseFloat(pct)>=20?'var(--green)':parseFloat(pct)>=12?'var(--gold)':'var(--red)';
+  const totalSuppExp=clients.filter(c=>c['Supplement Expected']==='true').reduce((s,c)=>s+(parseFloat(c['Supplement Amount'])||0),0);
+  const totalSuppRec=clients.filter(c=>c['Supplement Received']==='true').reduce((s,c)=>s+(parseFloat(c['Supplement Amount'])||0),0);
   document.getElementById('stats').innerHTML=
     st('Open Deals',openC.length,'var(--gold)')+
     st('Approved',approved,'var(--green)')+
@@ -181,6 +183,8 @@ function renderStats(){
     st('Open Contract',fS(openContract),'var(--white)')+
     st('Actual Payout',fS(actualTotal),'var(--green)')+
     st('Est. Payout',fS(estTotal),'var(--dim)')+
+    st('Supp. Expected',fS(totalSuppExp),'var(--blue)')+
+    st('Supp. Received',fS(totalSuppRec),'var(--green)')+
     st('Revenue %',pct,col);
 }
 function st(l,v,c){return'<div class="stat"><div class="sl">'+l+'</div><div class="sv" style="color:'+c+'">'+v+'</div></div>';}
@@ -262,6 +266,15 @@ function clientDetailHTML(c,tot){
       +'<div><div class="lbl">Actual Payout</div><div style="font-family:var(--font-d);font-size:22px;font-weight:800;color:var(--green)">'+fmt(tot.actualPayout)+'</div></div>'
       +'</div>';
   }
+  if(c['Supplement Expected']==='true'){
+    const suppAmt=parseFloat(c['Supplement Amount'])||0;
+    const suppRec=c['Supplement Received']==='true';
+    html+='<div style="background:'+(suppRec?'var(--green-bg)':'rgba(74,142,194,0.08)')+';border:1px solid '+(suppRec?'rgba(61,184,122,0.3)':'rgba(74,142,194,0.3)')+';border-radius:8px;padding:10px 14px;margin-bottom:8px;display:flex;justify-content:space-between;align-items:center;">'
+      +'<div><div class="lbl" style="color:'+(suppRec?'var(--green)':'var(--blue)')+'">Supplement '+(suppRec?'Received':'Expected')+'</div>'
+      +(c['Supplement Desc']?'<div style="font-size:11px;color:var(--dim);margin-top:2px;">'+hs(c['Supplement Desc'])+'</div>':'')+'</div>'
+      +'<div style="font-family:var(--font-d);font-size:22px;font-weight:800;color:'+(suppRec?'var(--green)':'var(--blue)')+'">'+fmt(suppAmt)+'</div>'
+      +'</div>';
+  }
   if(c['Notes'])html+='<div style="background:var(--surface);border-radius:8px;padding:10px 12px;font-size:12px;color:var(--dim);">'+hs(c['Notes'])+'</div>';
   return html;
 }
@@ -306,6 +319,26 @@ function buildModal(c){
     +'<div style="position:relative"><span style="position:absolute;left:10px;top:50%;transform:translateY(-50%);color:var(--dim)">$</span>'
     +'<input class="inp pfx" id="mAP" type="number" value="'+(c['Actual Payout']||'')+'" placeholder="0.00"></div></div>'
     +'<div class="fg"><label class="lbl">Notes</label><textarea class="inp" id="mNo" rows="2" style="resize:vertical">'+hs(c['Notes']||'')+'</textarea></div>'
+    +'</div>'
+    +'<div class="sec-div">Supplement</div>'
+    +'<div style="background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:14px;margin-bottom:14px;">'
+    +'<div style="display:flex;align-items:center;gap:10px;margin-bottom:10px;">'
+    +'<input type="checkbox" id="mSupExp" '+(c['Supplement Expected']==='true'?'checked':'')+' onchange="togSupp()" style="width:16px;height:16px;accent-color:var(--gold);cursor:pointer;">'
+    +'<label for="mSupExp" style="font-size:13px;color:var(--text);cursor:pointer;font-weight:600;">Supplement Expected</label>'
+    +'</div>'
+    +'<div id="suppDetails" style="display:'+(c['Supplement Expected']==='true'?'block':'none')+'">'
+    +'<div class="fg2">'
+    +'<div class="fg"><label class="lbl">Expected Supplement Amount ($)</label>'
+    +'<div style="position:relative"><span style="position:absolute;left:10px;top:50%;transform:translateY(-50%);color:var(--dim)">$</span>'
+    +'<input class="inp pfx" id="mSupAmt" type="number" value="'+(c['Supplement Amount']||'')+'" placeholder="0.00"></div></div>'
+    +'<div class="fg"><label class="lbl">Description</label>'
+    +'<input class="inp" id="mSupDesc" value="'+hs(c['Supplement Desc']||'')+'" placeholder="e.g. RFG DRIP, O&P, pipe boots..."></div>'
+    +'</div>'
+    +'<div style="display:flex;align-items:center;gap:10px;margin-top:8px;">'
+    +'<input type="checkbox" id="mSupRec" '+(c['Supplement Received']==='true'?'checked':'')+' style="width:16px;height:16px;accent-color:var(--green);cursor:pointer;">'
+    +'<label for="mSupRec" style="font-size:13px;cursor:pointer;color:'+(c['Supplement Received']==='true'?'var(--green)':'var(--text)')+';font-weight:600;">Supplement Received — adds to payout total</label>'
+    +'</div>'
+    +'</div>'
     +'</div>'
     // Phase
     +'<div class="sec-div">Phase</div>'
@@ -385,6 +418,12 @@ function removeTrade(id){
   renderTradesUI();
 }
 
+function togSupp(){
+  const cb=document.getElementById('mSupExp');
+  const det=document.getElementById('suppDetails');
+  if(det)det.style.display=cb.checked?'block':'none';
+}
+
 function pickP(p,btn){sP=p;document.querySelectorAll('.pbtn').forEach(b=>b.classList.remove('on'));btn.classList.add('on');}
 
 function gF(){
@@ -396,6 +435,10 @@ function gF(){
     insuranceStatus:(document.getElementById('mIS')||{}).value||'',
     actualPayout:(document.getElementById('mAP')||{}).value||'',
     notes:(document.getElementById('mNo')||{}).value||'',
+    supplementExpected:(document.getElementById('mSupExp')||{}).checked?'true':'',
+    supplementAmount:(document.getElementById('mSupAmt')||{}).value||'',
+    supplementDesc:(document.getElementById('mSupDesc')||{}).value||'',
+    supplementReceived:(document.getElementById('mSupRec')||{}).checked?'true':'',
     phase:sP,
     trades:JSON.stringify(modalTrades.map(t=>({type:t.type,shingle:t.shingle||'',qty:t.qty||'',contractPrice:t.contractPrice||'',leadSource:t.leadSource||'Company Lead',buildCost:t.buildCost||'',split:t.split||'',splitWith:t.splitWith||''}))),
   };
@@ -409,16 +452,17 @@ async function saveC(){
   const trades=parseTrades(f.trades);
   const totalContract=trades.reduce((s,t)=>s+(parseFloat(t.contractPrice)||0),0);
   const estPayout=trades.reduce((s,t)=>s+tradeCalc(t).payout,0);
-  const data={...f,actualTotal:totalContract||'',estimatedPayout:estPayout>0?estPayout.toFixed(2):''};
+  const suppPayout=f.supplementReceived==='true'?(parseFloat(f.supplementAmount)||0)*0.5:0;
+  const data={...f,actualTotal:totalContract||'',estimatedPayout:(estPayout+suppPayout)>0?(estPayout+suppPayout).toFixed(2):''};
   try{
     if(eid){
       data.id=eid;
       const r=await apiCall('update',data);if(r.error)throw new Error(r.error);
       const idx=clients.findIndex(c=>c['ID']===eid);
-      if(idx>=0)clients[idx]={...clients[idx],'Name':f.name,'Phone':f.phone,'Address':f.address,'Carrier':f.carrier,'Insurance Status':f.insuranceStatus,'Actual Payout':f.actualPayout,'Notes':f.notes,'Phase':f.phase,'Trades':f.trades,'Actual Total':String(totalContract),'Est Payout':data.estimatedPayout};
+      if(idx>=0)clients[idx]={...clients[idx],'Name':f.name,'Phone':f.phone,'Address':f.address,'Carrier':f.carrier,'Insurance Status':f.insuranceStatus,'Actual Payout':f.actualPayout,'Notes':f.notes,'Phase':f.phase,'Trades':f.trades,'Actual Total':String(totalContract),'Est Payout':data.estimatedPayout,'Supplement Expected':f.supplementExpected,'Supplement Amount':f.supplementAmount,'Supplement Desc':f.supplementDesc,'Supplement Received':f.supplementReceived};
     }else{
       const r=await apiCall('add',data);if(r.error)throw new Error(r.error);
-      clients.unshift({'ID':r.id,'Name':f.name,'Phone':f.phone,'Address':f.address,'Carrier':f.carrier,'Insurance Status':f.insuranceStatus,'Actual Payout':f.actualPayout,'Notes':f.notes,'Phase':f.phase,'Trades':f.trades,'Actual Total':String(totalContract),'Est Payout':data.estimatedPayout});
+      clients.unshift({'ID':r.id,'Name':f.name,'Phone':f.phone,'Address':f.address,'Carrier':f.carrier,'Insurance Status':f.insuranceStatus,'Actual Payout':f.actualPayout,'Notes':f.notes,'Phase':f.phase,'Trades':f.trades,'Actual Total':String(totalContract),'Est Payout':data.estimatedPayout,'Supplement Expected':f.supplementExpected,'Supplement Amount':f.supplementAmount,'Supplement Desc':f.supplementDesc,'Supplement Received':f.supplementReceived});
     }
     closeModal();renderAll();hStat('Saved ✓','var(--green)');
   }catch(e){alert('Save failed: '+e.message);btn.disabled=false;btn.textContent='Save';}
