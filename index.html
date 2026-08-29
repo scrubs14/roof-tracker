@@ -3,26 +3,29 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Roof Empire Client Tracker</title>
+<title>Roof Empire — Client Tracker</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Barlow+Condensed:wght@700;800;900&display=swap');
-:root{--black:#07080a;--surface:#0f1014;--card:#14161b;--card2:#1a1d24;--border:#22252e;--dim:#555c70;--text:#9da3b4;--white:#eef0f5;--gold:#c8922a;--gold-bg:rgba(200,146,42,0.08);--green:#3db87a;--green-bg:rgba(61,184,122,0.08);--red:#e05c5c;--blue:#4a8ec2;--purple:#9b7fa8;--font-d:"Barlow Condensed",sans-serif;--font-b:"Inter",sans-serif;}
+:root{--black:#07080a;--surface:#0f1014;--card:#14161b;--card2:#1a1d24;--border:#22252e;--dim:#555c70;--text:#9da3b4;--white:#eef0f5;--gold:#c8922a;--gold-bg:rgba(200,146,42,0.08);--green:#3db87a;--green-bg:rgba(61,184,122,0.08);--red:#e05c5c;--red-bg:rgba(224,92,92,0.08);--blue:#4a8ec2;--purple:#9b7fa8;--font-d:"Barlow Condensed",sans-serif;--font-b:"Inter",sans-serif;}
 *{box-sizing:border-box;margin:0;padding:0;}
 body{background:var(--black);color:var(--text);font-family:var(--font-b);min-height:100vh;}
 input,select,textarea{font-family:var(--font-b);}
 header{background:var(--surface);border-bottom:1px solid var(--border);padding:0 20px;height:56px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100;}
 .brand{font-family:var(--font-d);font-size:22px;font-weight:900;text-transform:uppercase;letter-spacing:2px;color:var(--white);}
 .brand em{color:var(--gold);font-style:normal;}
-main{max-width:960px;margin:0 auto;padding:24px 16px;}
-.stats{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px;margin-bottom:20px;}
-.stat{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:14px 16px;}
-.sl{font-size:9px;letter-spacing:1.5px;text-transform:uppercase;color:var(--dim);margin-bottom:5px;}
-.sv{font-family:var(--font-d);font-size:26px;font-weight:900;line-height:1;}
+main{max-width:1000px;margin:0 auto;padding:24px 16px;}
+/* STATS */
+.stats{display:grid;grid-template-columns:repeat(auto-fill,minmax(145px,1fr));gap:10px;margin-bottom:20px;}
+.stat{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:13px 15px;}
+.sl{font-size:9px;letter-spacing:1.5px;text-transform:uppercase;color:var(--dim);margin-bottom:4px;}
+.sv{font-family:var(--font-d);font-size:24px;font-weight:900;line-height:1;}
+/* FILTERS */
 .filters{display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap;align-items:center;}
 .search{flex:1;min-width:180px;background:var(--surface);border:1px solid var(--border);border-radius:7px;color:var(--white);font-size:13px;padding:8px 12px;outline:none;}
 .fbtn{background:none;border:1px solid var(--border);border-radius:6px;color:var(--dim);font-size:12px;padding:6px 14px;cursor:pointer;}
 .fbtn.on{background:var(--gold);border-color:var(--gold);color:#000;font-weight:700;}
 .addbtn{background:var(--gold);border:none;color:#000;font-family:var(--font-d);font-size:16px;font-weight:900;text-transform:uppercase;letter-spacing:1px;padding:8px 20px;border-radius:8px;cursor:pointer;}
+/* CLIENT CARDS */
 .cc{border:2px solid var(--border);border-radius:12px;margin-bottom:8px;overflow:hidden;background:var(--card);}
 .cc.closed{border-color:var(--green);}
 .cc.denied{border-color:var(--red);}
@@ -30,29 +33,40 @@ main{max-width:960px;margin:0 auto;padding:24px 16px;}
 .cdot{width:9px;height:9px;border-radius:50%;flex-shrink:0;}
 .cname{font-family:var(--font-d);font-size:19px;font-weight:800;text-transform:uppercase;letter-spacing:1px;color:var(--white);}
 .cmeta{font-size:11px;color:var(--dim);margin-top:2px;}
-.cright{margin-left:auto;display:flex;align-items:center;gap:10px;flex-shrink:0;}
+.cright{margin-left:auto;display:flex;align-items:center;gap:8px;flex-shrink:0;flex-wrap:wrap;justify-content:flex-end;}
 .chev{color:var(--dim);font-size:13px;transition:transform 0.2s;}
 .cbody{padding:16px;border-top:1px solid var(--border);display:none;}
 .cbody.open{display:block;}
 .pbadge{font-size:10px;font-weight:700;padding:3px 9px;border-radius:10px;white-space:nowrap;}
+/* MODAL */
 .overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.88);z-index:200;overflow-y:auto;padding:20px;}
-.mbox{background:var(--card);border:1px solid var(--border);border-radius:14px;max-width:660px;margin:auto;padding:28px;}
+.mbox{background:var(--card);border:1px solid var(--border);border-radius:14px;max-width:700px;margin:auto;padding:28px;}
+/* FORM */
 .fg2{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:14px;}
 .fg{display:flex;flex-direction:column;gap:4px;}
 .fg.full{grid-column:1/-1;}
 .lbl{font-size:9px;letter-spacing:1.5px;text-transform:uppercase;color:var(--dim);font-weight:600;}
 .inp{background:var(--card2);border:1px solid var(--border);border-radius:7px;color:var(--white);font-size:13px;padding:9px 11px;outline:none;width:100%;}
 .inp:focus{border-color:var(--gold);}
+.inp.pfx{padding-left:22px;}
 .sel{background:var(--card2);border:1px solid var(--border);border-radius:7px;color:var(--white);font-size:13px;padding:9px 11px;outline:none;width:100%;cursor:pointer;-webkit-appearance:none;}
-.trow{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px;}
-.tc{background:var(--card2);border:2px solid var(--border);border-radius:8px;padding:7px 14px;cursor:pointer;font-size:12px;font-weight:600;color:var(--dim);user-select:none;}
-.tc.on{border-color:var(--gold);background:var(--gold-bg);color:var(--gold);}
-.rdet{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:14px;margin-bottom:14px;}
-.pbox{background:var(--green-bg);border:1px solid rgba(61,184,122,0.25);border-radius:8px;padding:12px 16px;display:flex;gap:20px;flex-wrap:wrap;margin-bottom:14px;}
+.sec-div{font-size:9px;letter-spacing:2px;text-transform:uppercase;color:var(--gold);font-weight:700;margin:16px 0 10px;padding-bottom:6px;border-bottom:1px solid var(--border);}
+/* TRADE BLOCKS */
+.trade-block{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:14px;margin-bottom:10px;}
+.trade-block-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;}
+.trade-type-label{font-family:var(--font-d);font-size:16px;font-weight:800;text-transform:uppercase;color:var(--gold);}
+.trade-payout{font-family:var(--font-d);font-size:20px;font-weight:800;color:var(--green);}
+.trade-payout.est{color:var(--gold);}
+.rm-trade{background:none;border:1px solid var(--border);border-radius:5px;color:var(--dim);font-size:11px;padding:3px 10px;cursor:pointer;}
+.rm-trade:hover{border-color:var(--red);color:var(--red);}
+.add-trade-btn{width:100%;background:none;border:1px dashed var(--border);border-radius:8px;color:var(--gold);font-family:var(--font-d);font-size:15px;font-weight:700;text-transform:uppercase;padding:10px;cursor:pointer;margin-bottom:14px;}
+.add-trade-btn:hover{border-color:var(--gold);}
+/* PHASE */
 .prow{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:14px;}
 .pbtn{background:none;border:1px solid var(--border);border-radius:6px;color:var(--dim);font-size:11px;font-weight:600;padding:5px 12px;cursor:pointer;}
 .pbtn.on{border-color:var(--gold);color:var(--gold);background:var(--gold-bg);}
-.arow{display:flex;gap:10px;align-items:center;}
+/* ACTIONS */
+.arow{display:flex;gap:10px;align-items:center;margin-top:6px;}
 .svbtn{background:var(--gold);border:none;color:#000;font-family:var(--font-d);font-size:16px;font-weight:900;text-transform:uppercase;letter-spacing:1px;padding:10px 24px;border-radius:8px;cursor:pointer;}
 .svbtn:disabled{opacity:0.5;cursor:not-allowed;}
 .delbtn{background:none;border:1px solid var(--red);border-radius:7px;color:var(--red);font-size:12px;padding:9px 16px;cursor:pointer;}
@@ -73,7 +87,7 @@ main{max-width:960px;margin:0 auto;padding:24px 16px;}
   <div class="filters">
     <input class="search" id="srch" type="text" placeholder="Search name, address, carrier..." oninput="renderList()">
     <button class="fbtn on" onclick="setF('All',this)">All</button>
-    <button class="fbtn" onclick="setF('Active',this)">Active</button>
+    <button class="fbtn" onclick="setF('Open',this)">Open</button>
     <button class="fbtn" onclick="setF('Approved',this)">Approved</button>
     <button class="fbtn" onclick="setF('Closed',this)">Closed</button>
     <button class="fbtn" onclick="setF('Denied',this)">Denied</button>
@@ -81,28 +95,52 @@ main{max-width:960px;margin:0 auto;padding:24px 16px;}
   <div id="list"></div>
 </main>
 <div class="overlay" id="modal"><div class="mbox" id="mbox"></div></div>
+
 <script>
 const API='https://script.google.com/macros/s/AKfycbxDR3-zhqsySClxoRPMv_oYyl26ruP_ClDpUPf9HPGbbZwwe6Kvg0xn23aISlMBImD_/exec';
-const ARCH=575,METAL=850,ABUILD=244.96,MBUILD=415;
-const TRADES=['Roof','Gutters','Siding','Concrete','Interior Work'];
+const ARCH=575,METAL=850,ABUILD=244.96,MBUILD=415,GBUILD=6,SBUILD=300,DBUILD=16;
 const PHASES=['Lead','Filed','In Progress','Approved','Denied','Supplementing','Appraisal','Closed'];
+const OPEN_PHASES=['Lead','Filed','In Progress','Approved','Supplementing','Appraisal'];
 const CARRIERS=['State Farm','Allstate','Farmers','Liberty Mutual','Nationwide','USAA','Travelers','Tennessee Farmers','Farm Bureau','Kentucky Farm Bureau','Encompass','Erie','Auto-Owners','Other'];
+const TRADE_TYPES=['Roof','Gutters','Siding','Concrete','Decking','Interior Work','Other'];
 const PC={Lead:'#555c70',Filed:'#4a8ec2','In Progress':'#c8922a',Approved:'#3db87a',Denied:'#e05c5c',Supplementing:'#9b7fa8',Appraisal:'#4a8ec2',Closed:'#3db87a'};
 
-let clients=[],curF='All',eid=null,sT=[],sP='Lead';
+let clients=[],curF='All',eid=null,sP='Lead',modalTrades=[];
 
 function fmt(n){return'$'+Number(n||0).toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2});}
 function fS(n){return'$'+Number(n||0).toLocaleString('en-US',{maximumFractionDigits:0});}
 function hs(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
 function hStat(msg,c){const e=document.getElementById('hs');e.textContent=msg;e.style.color=c||'var(--dim)';setTimeout(()=>e.textContent='',3000);}
 
-function calcP(sq,sh,lead,total,split){
-  sq=parseFloat(sq)||0;if(!sq)return 0;
-  const build=sq*(sh==='Metal'?MBUILD:ABUILD);
-  const contract=parseFloat(total)||sq*(sh==='Metal'?METAL:ARCH);
-  const op=lead==='Self-Gen'?0.05:0.15;
-  const payout=(contract-build-contract*op)*0.5;
-  return(split==='true'||split===true)?payout*0.5:payout;
+// Calculate payout for a single trade object
+function tradeCalc(t){
+  const op=(t.leadSource==='Self-Gen'?0.05:0.15);
+  const contract=parseFloat(t.contractPrice)||0;
+  if(!contract)return{build:0,payout:0,pct:0};
+  let build=0;
+  const qty=parseFloat(t.qty)||0;
+  if(t.type==='Roof'){build=qty*(t.shingle==='Metal'?MBUILD:ABUILD);}
+  else if(t.type==='Gutters'){build=qty*GBUILD;}
+  else if(t.type==='Siding'){build=qty*SBUILD;}
+  else if(t.type==='Decking'){build=qty*DBUILD;}
+  else{build=parseFloat(t.buildCost)||0;}
+  const gross=contract-build-contract*op;
+  const payout=gross*0.5*(t.split==='true'?0.5:1);
+  const pct=contract>0?(payout/contract*100):0;
+  return{build,payout,pct};
+}
+
+function clientTotals(c){
+  const trades=parseTrades(c.Trades||c['Trades']||'[]');
+  const actualPayout=parseFloat(c['Actual Payout'])||0;
+  const estPayout=trades.reduce((s,t)=>s+tradeCalc(t).payout,0);
+  const contract=trades.reduce((s,t)=>s+(parseFloat(t.contractPrice)||0),0)||parseFloat(c['Actual Total'])||0;
+  return{trades,actualPayout,estPayout,contract,displayPayout:actualPayout>0?actualPayout:estPayout,hasActual:actualPayout>0};
+}
+
+function parseTrades(raw){
+  if(!raw)return[];
+  try{const p=JSON.parse(raw);return Array.isArray(p)?p:[];}catch(e){return[];}
 }
 
 async function apiCall(action,data){
@@ -114,29 +152,35 @@ async function load(){
   document.getElementById('list').innerHTML='<div class="empty">Loading...</div>';
   try{
     const r=await apiCall('getAll',{});
-    clients=r.clients||[];
+    clients=(r.clients||[]).map(c=>{
+      // normalize field names
+      const out={};
+      Object.keys(c).forEach(k=>out[k.trim()]=typeof c[k]==='string'?c[k].trim():c[k]);
+      return out;
+    });
     renderAll();
-  }catch(e){document.getElementById('list').innerHTML='<div class="empty">Failed to connect to Google Sheets.</div>';}
+  }catch(e){document.getElementById('list').innerHTML='<div class="empty">Failed to connect.</div>';}
 }
 
 function renderStats(){
-  const tC=clients.reduce((s,c)=>s+(parseFloat(c['Actual Total'])||0),0);
-  const actualPayoutTotal=clients.reduce((s,c)=>s+(parseFloat(c['Actual Payout'])||0)*(c['Split Deal']==='true'||c['Split Deal']===true?0.5:1),0);
-  const estOnlyClients=clients.filter(c=>!parseFloat(c['Actual Payout']));
-  const estP=estOnlyClients.reduce((s,c)=>s+calcP(c['Squares'],c['Shingle Type'],c['Lead Source'],c['Actual Total'],c['Split Deal']),0);
-  const allP=actualPayoutTotal+estP;
-  const remainP=clients.filter(c=>c['Phase']!=='Closed'&&!parseFloat(c['Actual Payout'])).reduce((s,c)=>s+calcP(c['Squares'],c['Shingle Type'],c['Lead Source'],c['Actual Total'],c['Split Deal']),0);
+  const openC=clients.filter(c=>OPEN_PHASES.includes((c['Phase']||'').trim()));
   const approved=clients.filter(c=>(c['Phase']||'').trim()==='Approved').length;
   const denied=clients.filter(c=>(c['Phase']||'').trim()==='Denied').length;
-  const pct=tC>0?((allP/tC)*100).toFixed(1)+'%':'—';
+  const openContract=openC.reduce((s,c)=>s+clientTotals(c).contract,0);
+  const actualTotal=clients.filter(c=>(c['Phase']||'').trim()==='Closed').reduce((s,c)=>s+clientTotals(c).actualPayout,0)
+    +clients.filter(c=>(c['Phase']||'').trim()!=='Closed').reduce((s,c)=>s+(clientTotals(c).hasActual?clientTotals(c).actualPayout:0),0);
+  const estTotal=clients.filter(c=>!clientTotals(c).hasActual).reduce((s,c)=>s+clientTotals(c).estPayout,0);
+  const allPayout=actualTotal+estTotal;
+  const allContract=clients.reduce((s,c)=>s+clientTotals(c).contract,0);
+  const pct=allContract>0?((allPayout/allContract)*100).toFixed(1)+'%':'—';
   const col=parseFloat(pct)>=20?'var(--green)':parseFloat(pct)>=12?'var(--gold)':'var(--red)';
   document.getElementById('stats').innerHTML=
-    st('Total Contract',fS(tC),'var(--white)')+
+    st('Open Deals',openC.length,'var(--gold)')+
     st('Approved',approved,'var(--green)')+
     st('Denied',denied,'var(--red)')+
-    st('Actual Payout',fS(actualPayoutTotal),'var(--green)')+
-    st('Est. Payout',fS(estP),'var(--dim)')+
-    st('Remaining',fS(remainP),'var(--gold)')+
+    st('Open Contract',fS(openContract),'var(--white)')+
+    st('Actual Payout',fS(actualTotal),'var(--green)')+
+    st('Est. Payout',fS(estTotal),'var(--dim)')+
     st('Revenue %',pct,col);
 }
 function st(l,v,c){return'<div class="stat"><div class="sl">'+l+'</div><div class="sv" style="color:'+c+'">'+v+'</div></div>';}
@@ -144,8 +188,8 @@ function st(l,v,c){return'<div class="stat"><div class="sl">'+l+'</div><div clas
 function renderList(){
   const q=document.getElementById('srch').value.toLowerCase();
   const filtered=clients.filter(c=>{
-    const ph=c['Phase']||'Lead';
-    if(curF==='Active'&&['Closed','Denied'].includes(ph))return false;
+    const ph=(c['Phase']||'').trim();
+    if(curF==='Open'&&!OPEN_PHASES.includes(ph))return false;
     if(curF==='Approved'&&ph!=='Approved')return false;
     if(curF==='Closed'&&ph!=='Closed')return false;
     if(curF==='Denied'&&ph!=='Denied')return false;
@@ -153,144 +197,195 @@ function renderList(){
     return true;
   });
   if(!filtered.length){
-    document.getElementById('list').innerHTML='<div class="empty"><div style="font-size:40px;opacity:0.3;margin-bottom:12px">👤</div><div style="color:var(--white)">'+( clients.length===0?'No clients yet':'No results')+'</div></div>';
+    document.getElementById('list').innerHTML='<div class="empty"><div style="font-size:40px;opacity:0.3;margin-bottom:12px">👤</div><div style="color:var(--white)">'+(clients.length===0?'No clients yet':'No results')+'</div></div>';
     return;
   }
   document.getElementById('list').innerHTML=filtered.map(c=>{
-    const id=c['ID'],ph=c['Phase']||'Lead',phC=PC[ph]||'#555';
-    const payout=calcP(c['Squares'],c['Shingle Type'],c['Lead Source'],c['Actual Total'],c['Split Deal']);
-    const contract=parseFloat(c['Actual Total'])||0;
+    const id=c['ID'];
+    const ph=(c['Phase']||'Lead').trim();
+    const phColor=PC[ph]||'#555';
+    const tot=clientTotals(c);
     const dot=ph==='Closed'?'var(--green)':ph==='Denied'?'var(--red)':ph==='Approved'?'var(--green)':'var(--gold)';
-    return '<div class="cc'+( ph==='Closed'?' closed':ph==='Denied'?' denied':'')+'" id="cc_'+id+'">'+
-      '<div class="ch" onclick="toggleC(\''+id+'\')"><div class="cdot" style="background:'+dot+'"></div>'+
-      '<div style="flex:1;min-width:0"><div class="cname">'+hs(c['Name']||'No Name')+'</div>'+
-      '<div class="cmeta">'+hs(c['Trades']||'')+( c['Carrier']?' · '+hs(c['Carrier']):'')+(contract>0?' · '+fmt(contract):'')+'</div></div>'+
-      '<div class="cright"><span class="pbadge" style="background:'+phC+'22;color:'+phC+'">'+ph+'</span>'+
-      (c['Split Deal']==='true'?'<span style="font-size:9px;font-weight:700;padding:2px 7px;border-radius:8px;background:rgba(74,142,194,0.15);color:var(--blue)">SPLIT</span>':'')+
-      (c['Actual Payout']&&parseFloat(c['Actual Payout'])>0?
-        '<span style="font-family:var(--font-d);font-size:16px;font-weight:800;color:var(--green)">'+fmt(parseFloat(c['Actual Payout']))+'</span>':
-        payout>0?'<span style="font-family:var(--font-d);font-size:16px;font-weight:800;color:var(--gold)">'+fmt(payout)+'</span>':'')+
-      '<span class="chev" id="chev_'+id+'">▼</span></div></div>'+
-      '<div class="cbody" id="cb_'+id+'">'+
-      '<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:12px;margin-bottom:12px;">'+
-      (c['Phone']?'<div><div class="lbl">Phone</div><div style="color:var(--white);font-size:13px;">'+hs(c['Phone'])+'</div></div>':'')+
-      (c['Address']?'<div><div class="lbl">Address</div><div style="color:var(--text);font-size:12px;">'+hs(c['Address'])+'</div></div>':'')+
-      (c['Carrier']?'<div><div class="lbl">Carrier</div><div style="color:var(--text);font-size:13px;">'+hs(c['Carrier'])+'</div></div>':'')+
-      (c['Lead Source']?'<div><div class="lbl">Lead Source</div><div style="color:var(--gold);font-size:13px;font-weight:600;">'+hs(c['Lead Source'])+'</div></div>':'')+
-      (c['Shingle Type']?'<div><div class="lbl">Shingle</div><div style="color:var(--text);font-size:13px;">'+hs(c['Shingle Type'])+'</div></div>':'')+
-      (c['Squares']?'<div><div class="lbl">Squares</div><div style="font-family:var(--font-d);font-size:22px;font-weight:800;color:var(--white)">'+c['Squares']+' sq</div></div>':'')+
-      (contract>0?'<div><div class="lbl">Actual Total</div><div style="font-family:var(--font-d);font-size:22px;font-weight:800;color:var(--white)">'+fmt(contract)+'</div></div>':'')+
-      (c['Actual Payout']&&parseFloat(c['Actual Payout'])>0?
-        '<div><div class="lbl">Actual Payout</div><div style="font-family:var(--font-d);font-size:22px;font-weight:800;color:var(--green)">'+fmt(parseFloat(c['Actual Payout']))+'</div></div>':
-        payout>0?'<div><div class="lbl">Est. Payout</div><div style="font-family:var(--font-d);font-size:22px;font-weight:800;color:var(--gold)">'+fmt(payout)+'</div></div>':'')+
-      (c['Insurance Status']?'<div><div class="lbl">Ins. Status</div><div style="font-size:13px;font-weight:600;color:'+( c['Insurance Status']==="Approved"?"var(--green)":c['Insurance Status']==="Denied"?"var(--red)":"var(--text)")+'">'+hs(c['Insurance Status'])+'</div></div>':'')+
-      '</div>'+
-      (c['Notes']?'<div style="background:var(--surface);border-radius:8px;padding:10px 12px;font-size:12px;color:var(--dim);margin-bottom:12px;">'+hs(c['Notes'])+'</div>':'')+
-      '<button onclick="openEdit(\''+id+'\')" style="background:var(--gold);border:none;color:#000;font-family:var(--font-d);font-size:14px;font-weight:800;text-transform:uppercase;padding:8px 20px;border-radius:7px;cursor:pointer;">Edit</button>'+
-      '</div></div>';
+    const tradeNames=tot.trades.length>0?tot.trades.map(t=>t.type).join(' · '):(c['Trades']||'');
+    const splitAny=tot.trades.some(t=>t.split==='true');
+    return '<div class="cc'+(ph==='Closed'?' closed':ph==='Denied'?' denied':'')+'" id="cc_'+id+'">'
+      +'<div class="ch" onclick="toggleC(\''+id+'\')">'
+      +'<div class="cdot" style="background:'+dot+'"></div>'
+      +'<div style="flex:1;min-width:0">'
+      +'<div class="cname">'+hs(c['Name']||'No Name')+'</div>'
+      +'<div class="cmeta">'+hs(tradeNames)+(c['Carrier']?' · '+hs(c['Carrier']):'')+( tot.contract>0?' · '+fmt(tot.contract):'')+'</div>'
+      +'</div>'
+      +'<div class="cright">'
+      +(splitAny?'<span style="font-size:9px;font-weight:700;padding:2px 7px;border-radius:8px;background:rgba(74,142,194,0.15);color:var(--blue)">SPLIT</span>':'')
+      +'<span class="pbadge" style="background:'+phColor+'22;color:'+phColor+'">'+ph+'</span>'
+      +(tot.displayPayout>0?'<span style="font-family:var(--font-d);font-size:16px;font-weight:800;color:'+(tot.hasActual?'var(--green)':'var(--gold)')+'">'+fmt(tot.displayPayout)+'</span>':'')
+      +'<span class="chev" id="chev_'+id+'">▼</span>'
+      +'</div></div>'
+      +'<div class="cbody" id="cb_'+id+'">'
+      +clientDetailHTML(c,tot)
+      +'<button onclick="openEdit(\''+id+'\')" style="background:var(--gold);border:none;color:#000;font-family:var(--font-d);font-size:14px;font-weight:800;text-transform:uppercase;padding:8px 20px;border-radius:7px;cursor:pointer;margin-top:10px;">Edit</button>'
+      +'</div></div>';
   }).join('');
+}
+
+function clientDetailHTML(c,tot){
+  let html='<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:10px;margin-bottom:12px;">';
+  if(c['Phone'])html+='<div><div class="lbl">Phone</div><div style="color:var(--white);font-size:13px;">'+hs(c['Phone'])+'</div></div>';
+  if(c['Address'])html+='<div><div class="lbl">Address</div><div style="color:var(--text);font-size:12px;">'+hs(c['Address'])+'</div></div>';
+  if(c['Carrier'])html+='<div><div class="lbl">Carrier</div><div style="color:var(--text);font-size:13px;">'+hs(c['Carrier'])+'</div></div>';
+  if(c['Insurance Status'])html+='<div><div class="lbl">Ins. Status</div><div style="font-size:13px;font-weight:600;color:'+(c['Insurance Status']==='Approved'?'var(--green)':c['Insurance Status']==='Denied'?'var(--red)':'var(--text)')+'">'+hs(c['Insurance Status'])+'</div></div>';
+  html+='</div>';
+  // Trades breakdown
+  if(tot.trades.length>0){
+    html+='<div style="margin-bottom:10px;">';
+    tot.trades.forEach((t,i)=>{
+      const tc=tradeCalc(t);
+      const hasActual=parseFloat(c['Actual Payout'])>0&&i===0;
+      html+='<div style="background:var(--card2);border:1px solid var(--border);border-radius:8px;padding:10px 12px;margin-bottom:6px;">'
+        +'<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">'
+        +'<span style="font-family:var(--font-d);font-size:14px;font-weight:800;text-transform:uppercase;color:var(--gold)">'+hs(t.type||'')+'</span>'
+        +(t.split==='true'?'<span style="font-size:9px;font-weight:700;padding:2px 6px;border-radius:6px;background:rgba(74,142,194,0.15);color:var(--blue)">SPLIT</span>':'')
+        +(tc.payout>0?'<span style="font-family:var(--font-d);font-size:16px;font-weight:800;color:var(--green)">'+fmt(tc.payout)+'</span>':'')
+        +'</div>'
+        +'<div style="display:flex;gap:16px;font-size:12px;color:var(--dim);">'
+        +(t.qty?'<span>'+t.qty+(t.type==='Gutters'?' LF':' sq')+'</span>':'')
+        +(t.shingle?'<span>'+hs(t.shingle)+'</span>':'')
+        +(t.contractPrice?'<span style="color:var(--white);font-weight:600;">'+fmt(parseFloat(t.contractPrice))+'</span>':'')
+        +(tc.build>0?'<span>Build: '+fmt(tc.build)+'</span>':'')
+        +(tc.pct>0?'<span style="color:'+(tc.pct>=20?'var(--green)':tc.pct>=12?'var(--gold)':'var(--red)')+'">'+tc.pct.toFixed(1)+'%</span>':'')
+        +'</div></div>';
+    });
+    html+='</div>';
+  }
+  if(tot.actualPayout>0){
+    html+='<div style="background:var(--green-bg);border:1px solid rgba(61,184,122,0.25);border-radius:8px;padding:10px 14px;margin-bottom:8px;display:flex;gap:20px;">'
+      +'<div><div class="lbl">Actual Payout</div><div style="font-family:var(--font-d);font-size:22px;font-weight:800;color:var(--green)">'+fmt(tot.actualPayout)+'</div></div>'
+      +'</div>';
+  }
+  if(c['Notes'])html+='<div style="background:var(--surface);border-radius:8px;padding:10px 12px;font-size:12px;color:var(--dim);">'+hs(c['Notes'])+'</div>';
+  return html;
 }
 
 function renderAll(){renderStats();renderList();}
 function toggleC(id){const b=document.getElementById('cb_'+id),cv=document.getElementById('chev_'+id);const o=b.classList.toggle('open');cv.style.transform=o?'rotate(180deg)':'none';}
 function setF(f,btn){curF=f;document.querySelectorAll('.fbtn').forEach(b=>b.classList.remove('on'));btn.classList.add('on');renderList();}
-function openNew(){eid=null;sT=[];sP='Lead';buildModal({});}
-function openEdit(id){const c=clients.find(x=>x['ID']===id);if(!c)return;eid=id;sT=(c['Trades']||'').split(',').map(t=>t.trim()).filter(Boolean);sP=c['Phase']||'Lead';buildModal(c);}
+
+// MODAL
+function openNew(){eid=null;sP='Lead';modalTrades=[{id:Date.now(),type:'Roof',shingle:'Architectural',qty:'',contractPrice:'',leadSource:'Company Lead',buildCost:'',split:''}];buildModal({});}
+function openEdit(id){
+  const c=clients.find(x=>x['ID']===id);if(!c)return;
+  eid=id;sP=(c['Phase']||'Lead').trim();
+  const trades=parseTrades(c['Trades']||'[]');
+  modalTrades=trades.length>0?trades.map((t,i)=>({...t,id:Date.now()+i})):[{id:Date.now(),type:'Roof',shingle:'Architectural',qty:'',contractPrice:'',leadSource:'Company Lead',buildCost:'',split:''}];
+  buildModal(c);
+}
 function closeModal(){document.getElementById('modal').style.display='none';eid=null;}
 
-function togSplit(){
-  const cb=document.getElementById('mSplit');
-  const inp=document.getElementById('mSplitWith');
-  if(inp)inp.style.display=cb.checked?'block':'none';
-  upP();
-}
-
 function buildModal(c){
-  const isE=!!eid;
   document.getElementById('modal').style.display='block';
-  const sh=c['Shingle Type']||'Architectural';
-  const sq=c['Squares']||'';
-  const lead=c['Lead Source']||'Company Lead';
   document.getElementById('mbox').innerHTML=
-    '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;">'+
-    '<div style="font-family:var(--font-d);font-size:22px;font-weight:900;text-transform:uppercase;color:var(--white)">'+( isE?'Edit Client':'New Client')+'</div>'+
-    '<button onclick="closeModal()" style="background:none;border:none;color:var(--dim);font-size:24px;cursor:pointer;">✕</button></div>'+
-    '<div class="fg2">'+
-    '<div class="fg"><label class="lbl">Name *</label><input class="inp" id="mN" value="'+hs(c['Name']||'')+'" placeholder="Jane Smith"></div>'+
-    '<div class="fg"><label class="lbl">Phone</label><input class="inp" id="mPh" value="'+hs(c['Phone']||'')+'" placeholder="(931) 555-0100"></div>'+
-    '<div class="fg full"><label class="lbl">Address</label><input class="inp" id="mA" value="'+hs(c['Address']||'')+'" placeholder="123 Main St, Clarksville TN"></div>'+
-    '<div class="fg"><label class="lbl">Carrier</label><select class="sel" id="mCar"><option value="">Select...</option>'+CARRIERS.map(ca=>'<option'+( c['Carrier']===ca?' selected':'')+'>'+ca+'</option>').join('')+'</select></div>'+
-    '<div class="fg"><label class="lbl">Insurance Status</label><select class="sel" id="mIS">'+['Pending','Approved','Denied','Not Filed'].map(s=>'<option'+( c['Insurance Status']===s?' selected':'')+'>'+s+'</option>').join('')+'</select></div>'+
-    '</div>'+
-    '<div class="lbl" style="margin-bottom:8px">Trades</div>'+
-    '<div class="trow">'+TRADES.map(t=>'<div class="tc'+( sT.includes(t)?' on':'')+'" onclick="togT(\''+t+'\',this)">'+t+'</div>').join('')+'</div>'+
-    '<div id="rdet">'+( sT.includes('Roof')?roofHTML(sh,sq):'')+'</div>'+
-    '<div class="fg2">'+
-    '<div class="fg"><label class="lbl">Lead Source</label><select class="sel" id="mL" onchange="upP()">'+
-    ['Company Lead','Self-Gen'].map(l=>'<option'+( lead===l?' selected':'')+'>'+l+'</option>').join('')+'</select></div>'+
-    '<div class="fg"><label class="lbl">Actual Total ($)</label><div style="position:relative"><span style="position:absolute;left:10px;top:50%;transform:translateY(-50%);color:var(--dim)">$</span>'+
-    '<input class="inp" id="mTot" type="number" value="'+( c['Actual Total']||'')+'" placeholder="0.00" style="padding-left:22px" oninput="upP()"></div></div>'+
-    '<div class="fg"><label class="lbl">Actual Payout ($)</label><div style="position:relative"><span style="position:absolute;left:10px;top:50%;transform:translateY(-50%);color:var(--dim)">$</span>'+
-    '<input class="inp" id="mAP" type="number" value="'+( c['Actual Payout']||'')+'" placeholder="0.00" style="padding-left:22px"></div>'+
-    '<div style="font-size:10px;color:var(--dim);margin-top:3px">Enter when paid — replaces estimated payout</div></div>'+
-    '<div class="fg"><label class="lbl">Split Deal</label>'+
-    '<div style="display:flex;align-items:center;gap:10px;margin-top:4px;">'+
-    '<input type="checkbox" id="mSplit" '+( c['Split Deal']==="true"||c['Split Deal']===true?' checked':'')+' onchange="togSplit()" style="width:16px;height:16px;accent-color:var(--gold);cursor:pointer;">'+
-    '<span style="font-size:13px;color:var(--text)">Split with another rep (halves your payout)</span></div>'+
-    '<input class="inp" id="mSplitWith" value="'+hs(c['Split With']||'')+'" placeholder="Other rep name" style="margin-top:6px;display:'+( c['Split Deal']==="true"||c['Split Deal']===true?'block':'none')+'" id="mSplitWith">'+
-    '</div></div>'+
-    '<div id="pbox"></div>'+
-    '<div class="lbl" style="margin-bottom:8px">Phase</div>'+
-    '<div class="prow">'+PHASES.map(p=>'<button class="pbtn'+( sP===p?' on':'')+'" onclick="pickP(\''+p+'\',this)">'+p+'</button>').join('')+'</div>'+
-    '<div class="fg" style="margin-bottom:14px"><label class="lbl">Notes</label>'+
-    '<textarea class="inp" id="mNo" rows="3" style="resize:vertical">'+hs(c['Notes']||'')+'</textarea></div>'+
-    '<div class="arow">'+
-    '<button class="svbtn" id="mSv" onclick="saveC()">Save</button>'+
-    (isE?'<button class="delbtn" onclick="delC(\''+eid+'\')">Delete</button>':'')+
-    '<button class="canbtn" onclick="closeModal()">Cancel</button>'+
-    '</div>';
-  upP();
+    '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;">'
+    +'<div style="font-family:var(--font-d);font-size:22px;font-weight:900;text-transform:uppercase;color:var(--white)">'+(eid?'Edit Client':'New Client')+'</div>'
+    +'<button onclick="closeModal()" style="background:none;border:none;color:var(--dim);font-size:24px;cursor:pointer;">✕</button></div>'
+    // Client info
+    +'<div class="fg2">'
+    +'<div class="fg"><label class="lbl">Name *</label><input class="inp" id="mN" value="'+hs(c['Name']||'')+'" placeholder="Jane Smith"></div>'
+    +'<div class="fg"><label class="lbl">Phone</label><input class="inp" id="mPh" value="'+hs(c['Phone']||'')+'" placeholder="(931) 555-0100"></div>'
+    +'<div class="fg full"><label class="lbl">Address</label><input class="inp" id="mA" value="'+hs(c['Address']||'')+'" placeholder="123 Main St, Clarksville TN"></div>'
+    +'<div class="fg"><label class="lbl">Carrier</label><select class="sel" id="mCar"><option value="">Select...</option>'+CARRIERS.map(ca=>'<option'+(c['Carrier']===ca?' selected':'')+'>'+ca+'</option>').join('')+'</select></div>'
+    +'<div class="fg"><label class="lbl">Insurance Status</label><select class="sel" id="mIS">'+['Pending','Approved','Denied','Not Filed'].map(s=>'<option'+(c['Insurance Status']===s?' selected':'')+'>'+s+'</option>').join('')+'</select></div>'
+    +'</div>'
+    // Trades
+    +'<div class="sec-div">Trades</div>'
+    +'<div id="tradesContainer"></div>'
+    +'<button class="add-trade-btn" onclick="addTrade()">+ Add Another Trade</button>'
+    // Actual payout
+    +'<div class="sec-div">Financials</div>'
+    +'<div class="fg2">'
+    +'<div class="fg"><label class="lbl">Actual Payout ($) <span style="color:var(--dim);font-weight:400;text-transform:none;letter-spacing:0">— enter when paid</span></label>'
+    +'<div style="position:relative"><span style="position:absolute;left:10px;top:50%;transform:translateY(-50%);color:var(--dim)">$</span>'
+    +'<input class="inp pfx" id="mAP" type="number" value="'+(c['Actual Payout']||'')+'" placeholder="0.00"></div></div>'
+    +'<div class="fg"><label class="lbl">Notes</label><textarea class="inp" id="mNo" rows="2" style="resize:vertical">'+hs(c['Notes']||'')+'</textarea></div>'
+    +'</div>'
+    // Phase
+    +'<div class="sec-div">Phase</div>'
+    +'<div class="prow">'+PHASES.map(p=>'<button class="pbtn'+(sP===p?' on':'')+'" onclick="pickP(\''+p+'\',this)">'+p+'</button>').join('')+'</div>'
+    // Actions
+    +'<div class="arow">'
+    +'<button class="svbtn" id="mSv" onclick="saveC()">Save</button>'
+    +(eid?'<button class="delbtn" onclick="delC(\''+eid+'\')">Delete</button>':'')
+    +'<button class="canbtn" onclick="closeModal()">Cancel</button>'
+    +'</div>';
+  renderTradesUI();
 }
 
-function roofHTML(sh,sq){
-  return '<div class="rdet"><div style="font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--gold);font-weight:700;margin-bottom:10px">🏠 Roof Details</div>'+
-    '<div class="fg2"><div class="fg"><label class="lbl">Shingle Type</label><select class="sel" id="mSh" onchange="upP()">'+
-    ['Architectural','Metal'].map(s=>'<option'+( sh===s?' selected':'')+'>'+s+'</option>').join('')+'</select></div>'+
-    '<div class="fg"><label class="lbl">Square Count</label><input class="inp" id="mSq" type="number" value="'+( sq||'')+'" placeholder="28" oninput="upP()"></div></div>'+
-    '<div id="phint" style="font-size:11px;color:var(--gold);margin-top:6px"></div></div>';
+function renderTradesUI(){
+  const container=document.getElementById('tradesContainer');
+  if(!container)return;
+  container.innerHTML=modalTrades.map((t,idx)=>tradeBlockHTML(t,idx)).join('');
 }
 
-function togT(t,el){
-  el.classList.toggle('on');
-  if(el.classList.contains('on')){if(!sT.includes(t))sT.push(t);}else{sT=sT.filter(x=>x!==t);}
-  const rd=document.getElementById('rdet');
-  if(sT.includes('Roof')){if(!rd.innerHTML){rd.innerHTML=roofHTML('Architectural','');}}
-  else{rd.innerHTML='';}
-  upP();
+function tradeBlockHTML(t,idx){
+  const qty=t.qty||'';
+  const cp=t.contractPrice||'';
+  const tc=tradeCalc(t);
+  const needsShingle=t.type==='Roof';
+  const needsQty=['Roof','Gutters','Siding','Decking'].includes(t.type);
+  const needsBuild=['Concrete','Interior Work','Other'].includes(t.type);
+  const qLabel=t.type==='Gutters'?'Linear Feet':t.type==='Decking'?'Boards':'Squares';
+  const suggested=needsShingle?(parseFloat(qty)||0)*(t.shingle==='Metal'?METAL:ARCH):0;
+  return '<div class="trade-block" id="tb_'+t.id+'">'
+    +'<div class="trade-block-header">'
+    +'<span class="trade-type-label">'+hs(t.type||'Trade')+'</span>'
+    +(tc.payout>0?'<span class="trade-payout'+(t.split==="true"?' est":">")+'">'+fmt(tc.payout)+(t.split==="true"?' (your split)':'')+'</span>':'<span></span>')
+    +'<button class="rm-trade" onclick="removeTrade('+t.id+')">Remove</button>'
+    +'</div>'
+    +'<div class="fg2">'
+    +'<div class="fg"><label class="lbl">Trade Type</label>'
+    +'<select class="sel" onchange="updateTrade('+t.id+',\'type\',this.value)">'+TRADE_TYPES.map(tt=>'<option'+(t.type===tt?' selected':'')+'>'+tt+'</option>').join('')+'</select></div>'
+    +'<div class="fg"><label class="lbl">Lead Source</label>'
+    +'<select class="sel" onchange="updateTrade('+t.id+',\'leadSource\',this.value)"><option'+(( t.leadSource||'Company Lead')==='Company Lead'?' selected':'')+'>Company Lead</option><option'+(t.leadSource==='Self-Gen'?' selected':'')+'>Self-Gen</option></select></div>'
+    +(needsShingle?'<div class="fg"><label class="lbl">Shingle Type</label><select class="sel" onchange="updateTrade('+t.id+',\'shingle\',this.value)"><option'+(( t.shingle||'Architectural')==='Architectural'?' selected':'')+'>Architectural</option><option'+(t.shingle==='Metal'?' selected':'')+'>Metal</option></select></div>':'<div></div>')
+    +(needsQty?'<div class="fg"><label class="lbl">'+qLabel+'</label><input class="inp" type="number" value="'+qty+'" placeholder="0" onchange="updateTrade('+t.id+',\'qty\',this.value)"></div>':'<div></div>')
+    +(needsBuild?'<div class="fg"><label class="lbl">Your Build Cost ($)</label><div style="position:relative"><span style="position:absolute;left:10px;top:50%;transform:translateY(-50%);color:var(--dim)">$</span><input class="inp pfx" type="number" value="'+(t.buildCost||'')+'" placeholder="0.00" onchange="updateTrade('+t.id+',\'buildCost\',this.value)"></div></div>':'')
+    +'<div class="fg"><label class="lbl">Contract Price ($)</label><div style="position:relative"><span style="position:absolute;left:10px;top:50%;transform:translateY(-50%);color:var(--dim)">$</span><input class="inp pfx" type="number" value="'+cp+'" placeholder="0.00" onchange="updateTrade('+t.id+',\'contractPrice\',this.value)"></div></div>'
+    +'</div>'
+    +(suggested>0?'<div style="font-size:11px;color:var(--gold);margin-bottom:8px;">'+( parseFloat(qty)||0)+' sq × $'+(t.shingle==="Metal"?METAL:ARCH)+'/sq = '+fmt(suggested)+' suggested</div>':'')
+    +(tc.build>0||tc.payout>0?'<div style="display:flex;gap:16px;font-size:12px;margin-bottom:8px;">'
+      +(tc.build>0?'<span style="color:var(--red)">Build: '+fmt(tc.build)+'</span>':'')
+      +(tc.payout>0?'<span style="color:var(--green)">Payout: '+fmt(tc.payout)+'</span>':'')
+      +(tc.pct>0?'<span style="color:'+(tc.pct>=20?'var(--green)':tc.pct>=12?'var(--gold)':'var(--red)')+'">'+tc.pct.toFixed(1)+'%</span>':'')
+      +'</div>':'')
+    +'<div style="display:flex;align-items:center;gap:10px;">'
+    +'<input type="checkbox" id="split_'+t.id+'" '+(t.split==='true'?'checked':'')+' onchange="updateTrade('+t.id+',\'split\',this.checked?\'true\':\'\')" style="width:16px;height:16px;accent-color:var(--blue);cursor:pointer;">'
+    +'<label for="split_'+t.id+'" style="font-size:12px;color:var(--text);cursor:pointer;">Split commission with another rep (halves your payout)</label>'
+    +'</div>'
+    +'<input class="inp" type="text" placeholder="Other rep name (optional)" value="'+hs(t.splitWith||'')+'" onchange="updateTrade('+t.id+',\'splitWith\',this.value)" style="margin-top:6px;display:'+(t.split==='true'?'block':'none')+'" id="sw_'+t.id+'">'
+    +'</div>';
+}
+
+function updateTrade(id,field,val){
+  const t=modalTrades.find(x=>x.id===id);
+  if(!t)return;
+  t[field]=val;
+  if(field==='split'){const sw=document.getElementById('sw_'+id);if(sw)sw.style.display=val==='true'?'block':'none';}
+  // Re-render just this block
+  const el=document.getElementById('tb_'+id);
+  if(el){const tmp=document.createElement('div');tmp.innerHTML=tradeBlockHTML(t,modalTrades.indexOf(t));el.outerHTML=tmp.firstChild.outerHTML;}
+}
+
+function addTrade(){
+  modalTrades.push({id:Date.now(),type:'Roof',shingle:'Architectural',qty:'',contractPrice:'',leadSource:'Company Lead',buildCost:'',split:'',splitWith:''});
+  renderTradesUI();
+}
+
+function removeTrade(id){
+  if(modalTrades.length<=1){alert('Need at least one trade.');return;}
+  modalTrades=modalTrades.filter(t=>t.id!==id);
+  renderTradesUI();
 }
 
 function pickP(p,btn){sP=p;document.querySelectorAll('.pbtn').forEach(b=>b.classList.remove('on'));btn.classList.add('on');}
-
-function upP(){
-  const sq=parseFloat((document.getElementById('mSq')||{}).value)||0;
-  const sh=((document.getElementById('mSh')||{}).value)||'Architectural';
-  const lead=((document.getElementById('mL')||{}).value)||'Company Lead';
-  const tot=parseFloat((document.getElementById('mTot')||{}).value)||0;
-  const hint=document.getElementById('phint');
-  if(hint&&sq>0){hint.textContent=sq+' sq × $'+(sh==='Metal'?METAL:ARCH)+'/sq = '+fmt(sq*(sh==='Metal'?METAL:ARCH))+' suggested';}
-  const pb=document.getElementById('pbox');if(!pb)return;
-  if(sq>0&&sT.includes('Roof')){
-    const splitOn=(document.getElementById('mSplit')||{}).checked;
-    const p=calcP(sq,sh,lead,tot,splitOn?'true':'');
-    const contract=tot>0?tot:sq*(sh==='Metal'?METAL:ARCH);
-    const build=sq*(sh==='Metal'?MBUILD:ABUILD);
-    const pct=contract>0?(p/contract*100):0;
-    pb.innerHTML='<div class="pbox"><div><div class="lbl">Suggested/Contract</div><div style="font-family:var(--font-d);font-size:22px;font-weight:800;color:var(--gold)">'+fmt(contract)+'</div></div>'+
-      '<div><div class="lbl">Est. Payout</div><div style="font-family:var(--font-d);font-size:22px;font-weight:800;color:var(--green)">'+fmt(p)+'</div></div>'+
-      '<div><div class="lbl">Payout %</div><div style="font-family:var(--font-d);font-size:22px;font-weight:800;color:'+( pct>=20?'var(--green)':pct>=12?'var(--gold)':'var(--red)')+'">'+pct.toFixed(1)+'%</div></div>'+
-      '<div><div class="lbl">Build Cost</div><div style="font-family:var(--font-d);font-size:22px;font-weight:800;color:var(--red)">'+fmt(build)+'</div></div></div>';
-  }else{pb.innerHTML='';}
-}
 
 function gF(){
   return{
@@ -299,35 +394,31 @@ function gF(){
     address:(document.getElementById('mA')||{}).value||'',
     carrier:(document.getElementById('mCar')||{}).value||'',
     insuranceStatus:(document.getElementById('mIS')||{}).value||'',
-    trades:sT.join(', '),
-    shingleType:(document.getElementById('mSh')||{}).value||'',
-    squares:(document.getElementById('mSq')||{}).value||'',
-    actualTotal:(document.getElementById('mTot')||{}).value||'',
-    leadSource:(document.getElementById('mL')||{}).value||'Company Lead',
     actualPayout:(document.getElementById('mAP')||{}).value||'',
-    splitDeal:(document.getElementById('mSplit')||{}).checked?'true':'',
-    splitWith:(document.getElementById('mSplitWith')||{}).value||'',
+    notes:(document.getElementById('mNo')||{}).value||'',
     phase:sP,
-    notes:(document.getElementById('mNo')||{}).value||''
+    trades:JSON.stringify(modalTrades.map(t=>({type:t.type,shingle:t.shingle||'',qty:t.qty||'',contractPrice:t.contractPrice||'',leadSource:t.leadSource||'Company Lead',buildCost:t.buildCost||'',split:t.split||'',splitWith:t.splitWith||''}))),
   };
 }
 
 async function saveC(){
-  const btn=document.getElementById('mSv'),f=gF();
+  const btn=document.getElementById('mSv');
+  const f=gF();
   if(!f.name){alert('Name required');return;}
   btn.disabled=true;btn.textContent='Saving...';
-  const sq=parseFloat(f.squares)||0;
-  const ep=calcP(sq,f.shingleType,f.leadSource,f.actualTotal);
-  const data={...f,estimatedPayout:ep>0?ep.toFixed(2):''};
+  const trades=parseTrades(f.trades);
+  const totalContract=trades.reduce((s,t)=>s+(parseFloat(t.contractPrice)||0),0);
+  const estPayout=trades.reduce((s,t)=>s+tradeCalc(t).payout,0);
+  const data={...f,actualTotal:totalContract||'',estimatedPayout:estPayout>0?estPayout.toFixed(2):''};
   try{
     if(eid){
       data.id=eid;
       const r=await apiCall('update',data);if(r.error)throw new Error(r.error);
       const idx=clients.findIndex(c=>c['ID']===eid);
-      if(idx>=0)clients[idx]={'ID':eid,'Name':f.name,'Phone':f.phone,'Address':f.address,'Carrier':f.carrier,'Insurance Status':f.insuranceStatus,'Trades':f.trades,'Shingle Type':f.shingleType,'Squares':f.squares,'Actual Total':f.actualTotal,'Lead Source':f.leadSource,'Est Payout':data.estimatedPayout,'Actual Payout':f.actualPayout,'Split Deal':f.splitDeal,'Split With':f.splitWith,'Phase':f.phase,'Notes':f.notes};
+      if(idx>=0)clients[idx]={...clients[idx],'Name':f.name,'Phone':f.phone,'Address':f.address,'Carrier':f.carrier,'Insurance Status':f.insuranceStatus,'Actual Payout':f.actualPayout,'Notes':f.notes,'Phase':f.phase,'Trades':f.trades,'Actual Total':String(totalContract),'Est Payout':data.estimatedPayout};
     }else{
       const r=await apiCall('add',data);if(r.error)throw new Error(r.error);
-      clients.unshift({'ID':r.id,'Name':f.name,'Phone':f.phone,'Address':f.address,'Carrier':f.carrier,'Insurance Status':f.insuranceStatus,'Trades':f.trades,'Shingle Type':f.shingleType,'Squares':f.squares,'Actual Total':f.actualTotal,'Lead Source':f.leadSource,'Est Payout':data.estimatedPayout,'Actual Payout':f.actualPayout,'Split Deal':f.splitDeal,'Split With':f.splitWith,'Phase':f.phase,'Notes':f.notes});
+      clients.unshift({'ID':r.id,'Name':f.name,'Phone':f.phone,'Address':f.address,'Carrier':f.carrier,'Insurance Status':f.insuranceStatus,'Actual Payout':f.actualPayout,'Notes':f.notes,'Phase':f.phase,'Trades':f.trades,'Actual Total':String(totalContract),'Est Payout':data.estimatedPayout});
     }
     closeModal();renderAll();hStat('Saved ✓','var(--green)');
   }catch(e){alert('Save failed: '+e.message);btn.disabled=false;btn.textContent='Save';}
